@@ -1,12 +1,11 @@
-/* =========================================
-SHADOW RUN
-CLEAN GAME JAVASCRIPT
-========================================= */
+/* ==================================================
+SHADOW RUN — AUTO START ENDLESS RUNNER
+================================================== */
 
 
-/* =========================================
-GET HTML ELEMENTS
-========================================= */
+/* ==================================================
+GET GAME ELEMENTS
+================================================== */
 
 const game = document.getElementById("game");
 
@@ -65,9 +64,9 @@ const soundButton =
 document.getElementById("soundButton");
 
 
-/* =========================================
+/* ==================================================
 GAME VARIABLES
-========================================= */
+================================================== */
 
 let gameRunning = false;
 
@@ -89,24 +88,24 @@ let jumpVelocity = 0;
 
 let pursuerProgress = 0;
 
-let animationFrame;
+let animationFrame = null;
 
-let obstacleTimer;
+let obstacleTimer = null;
 
-let collectibleTimer;
+let collectibleTimer = null;
 
-let distanceTimer;
+let distanceTimer = null;
 
-let difficultyTimer;
+let difficultyTimer = null;
 
 let soundEnabled = true;
 
 let audioContext = null;
 
 
-/* =========================================
+/* ==================================================
 LANES
-========================================= */
+================================================== */
 
 const lanes = [
 25,
@@ -115,9 +114,9 @@ const lanes = [
 ];
 
 
-/* =========================================
+/* ==================================================
 BEST SCORE
-========================================= */
+================================================== */
 
 let bestScore =
 Number(
@@ -126,13 +125,17 @@ localStorage.getItem(
 )
 ) || 0;
 
+if (bestScoreDisplay) {
+
 bestScoreDisplay.textContent =
 bestScore;
 
+}
 
-/* =========================================
-SOUND SYSTEM
-========================================= */
+
+/* ==================================================
+AUDIO
+================================================== */
 
 function startAudio() {
 
@@ -162,9 +165,9 @@ audioContext.resume();
 }
 
 
-/* =========================================
-PLAY SOUND
-========================================= */
+/* ==================================================
+SOUND EFFECT
+================================================== */
 
 function playSound(
 frequency,
@@ -219,7 +222,6 @@ audioContext.destination
 
 oscillator.start();
 
-
 oscillator.stop(
 audioContext.currentTime +
 duration
@@ -228,11 +230,15 @@ duration
 }
 
 
-/* =========================================
-MOVE PLAYER
-========================================= */
+/* ==================================================
+PLAYER POSITION
+================================================== */
 
 function updatePlayerPosition() {
+
+if (!player) {
+return;
+}
 
 player.style.left =
 lanes[currentLane] + "%";
@@ -240,9 +246,9 @@ lanes[currentLane] + "%";
 }
 
 
-/* =========================================
+/* ==================================================
 MOVE LEFT
-========================================= */
+================================================== */
 
 function moveLeft() {
 
@@ -250,7 +256,10 @@ if (!gameRunning) {
 return;
 }
 
-if (currentLane > 0) {
+if (
+currentLane >
+0
+) {
 
 currentLane--;
 
@@ -266,9 +275,9 @@ playSound(
 }
 
 
-/* =========================================
+/* ==================================================
 MOVE RIGHT
-========================================= */
+================================================== */
 
 function moveRight() {
 
@@ -295,9 +304,9 @@ playSound(
 }
 
 
-/* =========================================
+/* ==================================================
 JUMP
-========================================= */
+================================================== */
 
 function jump() {
 
@@ -310,13 +319,11 @@ return;
 
 }
 
-
 isJumping =
 true;
 
 jumpVelocity =
 15;
-
 
 playSound(
 550,
@@ -326,9 +333,9 @@ playSound(
 }
 
 
-/* =========================================
-UPDATE JUMP
-========================================= */
+/* ==================================================
+JUMP PHYSICS
+================================================== */
 
 function updateJump() {
 
@@ -336,17 +343,16 @@ if (!isJumping) {
 return;
 }
 
-
 jumpHeight +=
 jumpVelocity;
-
 
 jumpVelocity -=
 0.8;
 
 
 if (
-jumpHeight <= 0
+jumpHeight <=
+0
 ) {
 
 jumpHeight =
@@ -361,6 +367,8 @@ false;
 }
 
 
+if (player) {
+
 player.style.bottom =
 (
 110 +
@@ -369,15 +377,22 @@ jumpHeight
 
 }
 
+}
 
-/* =========================================
+
+/* ==================================================
 CREATE OBSTACLE
-========================================= */
+================================================== */
 
 function createObstacle() {
 
-if (!gameRunning) {
+if (
+!gameRunning ||
+!objects
+) {
+
 return;
+
 }
 
 
@@ -391,11 +406,12 @@ obstacle.className =
 "game-object";
 
 
-const isVehicle =
-Math.random() > 0.5;
+const vehicle =
+Math.random() >
+0.5;
 
 
-if (isVehicle) {
+if (vehicle) {
 
 obstacle.classList.add(
 "vehicle"
@@ -425,7 +441,7 @@ lanes[lane] + "%";
 
 
 obstacle.style.top =
-"-100px";
+"-120px";
 
 
 objects.appendChild(
@@ -435,24 +451,29 @@ obstacle
 }
 
 
-/* =========================================
-CREATE COLLECTIBLE
-========================================= */
+/* ==================================================
+CREATE COIN
+================================================== */
 
 function createCollectible() {
 
-if (!gameRunning) {
+if (
+!gameRunning ||
+!collectibles
+) {
+
 return;
+
 }
 
 
-const collectible =
+const coin =
 document.createElement(
 "div"
 );
 
 
-collectible.className =
+coin.className =
 "game-object collectible";
 
 
@@ -462,44 +483,52 @@ Math.random() * 3
 );
 
 
-collectible.dataset.lane =
+coin.dataset.lane =
 lane;
 
 
-collectible.style.left =
+coin.style.left =
 lanes[lane] + "%";
 
 
-collectible.style.top =
-"-50px";
+coin.style.top =
+"-60px";
 
 
 collectibles.appendChild(
-collectible
+coin
 );
 
 }
 
 
-/* =========================================
-MOVE GAME OBJECTS
-========================================= */
+/* ==================================================
+MOVE OBSTACLES AND COINS
+================================================== */
 
 function updateObjects() {
 
+if (!gameRunning) {
+return;
+}
 
-const gameObjects =
-document.querySelectorAll(
-"#objects .game-object"
+
+/* OBSTACLES */
+
+if (objects) {
+
+const obstacles =
+objects.querySelectorAll(
+".game-object"
 );
 
 
-gameObjects.forEach(
-object => {
+obstacles.forEach(
+obstacle => {
 
 let top =
 parseFloat(
-object.style.top
+obstacle.style.top
 );
 
 
@@ -507,12 +536,12 @@ top +=
 speed;
 
 
-object.style.top =
+obstacle.style.top =
 top + "px";
 
 
 checkObstacleCollision(
-object,
+obstacle,
 top
 );
 
@@ -523,17 +552,23 @@ window.innerHeight +
 150
 ) {
 
-object.remove();
+obstacle.remove();
 
 }
 
 }
 );
 
+}
+
+
+/* COINS */
+
+if (collectibles) {
 
 const coins =
-document.querySelectorAll(
-"#collectibles .game-object"
+collectibles.querySelectorAll(
+".game-object"
 );
 
 
@@ -575,10 +610,12 @@ coin.remove();
 
 }
 
+}
 
-/* =========================================
+
+/* ==================================================
 OBSTACLE COLLISION
-========================================= */
+================================================== */
 
 function checkObstacleCollision(
 obstacle,
@@ -605,19 +642,18 @@ const screenHeight =
 window.innerHeight;
 
 
-const collisionZone =
+const playerZone =
 screenHeight -
 top;
 
 
 if (
-collisionZone >
+playerZone >
 70 &&
 
-collisionZone <
-210
+playerZone <
+220
 ) {
-
 
 if (
 !isJumping
@@ -634,9 +670,9 @@ obstacle
 }
 
 
-/* =========================================
+/* ==================================================
 HIT OBSTACLE
-========================================= */
+================================================== */
 
 function hitObstacle(
 obstacle
@@ -677,13 +713,12 @@ playSound(
 );
 
 
-/* Pursuer gets closer */
-
 updatePursuer();
 
 
 if (
-energy <= 0
+energy <=
+0
 ) {
 
 energy =
@@ -696,9 +731,9 @@ endGame();
 }
 
 
-/* =========================================
+/* ==================================================
 COIN COLLISION
-========================================= */
+================================================== */
 
 function checkCoinCollision(
 coin,
@@ -725,16 +760,16 @@ const screenHeight =
 window.innerHeight;
 
 
-const collisionZone =
+const playerZone =
 screenHeight -
 top;
 
 
 if (
-collisionZone >
+playerZone >
 60 &&
 
-collisionZone <
+playerZone <
 220
 ) {
 
@@ -747,9 +782,9 @@ coin
 }
 
 
-/* =========================================
+/* ==================================================
 COLLECT COIN
-========================================= */
+================================================== */
 
 function collectCoin(
 coin
@@ -807,33 +842,41 @@ playSound(
 }
 
 
-/* =========================================
-UPDATE SCORE
-========================================= */
+/* ==================================================
+SCORE
+================================================== */
 
 function updateScore() {
+
+if (scoreDisplay) {
 
 scoreDisplay.textContent =
 score;
 
 }
 
+}
 
-/* =========================================
-UPDATE ENERGY
-========================================= */
+
+/* ==================================================
+ENERGY
+================================================== */
 
 function updateEnergy() {
+
+if (energyFill) {
 
 energyFill.style.width =
 energy + "%";
 
 }
 
+}
 
-/* =========================================
-UPDATE DISTANCE
-========================================= */
+
+/* ==================================================
+DISTANCE
+================================================== */
 
 function updateDistance() {
 
@@ -850,9 +893,13 @@ score +=
 2;
 
 
+if (distanceDisplay) {
+
 distanceDisplay.textContent =
 distance +
 " m";
+
+}
 
 
 updateScore();
@@ -860,14 +907,19 @@ updateScore();
 }
 
 
-/* =========================================
-UPDATE PURSUER
-========================================= */
+/* ==================================================
+PURSUER
+================================================== */
 
 function updatePursuer() {
 
-if (!gameRunning) {
+if (
+!gameRunning ||
+!pursuer
+) {
+
 return;
+
 }
 
 
@@ -896,9 +948,9 @@ endGame();
 }
 
 
-/* =========================================
-INCREASE DIFFICULTY
-========================================= */
+/* ==================================================
+DIFFICULTY
+================================================== */
 
 function increaseDifficulty() {
 
@@ -924,9 +976,9 @@ speed =
 }
 
 
-/* =========================================
+/* ==================================================
 GAME LOOP
-========================================= */
+================================================== */
 
 function gameLoop() {
 
@@ -948,9 +1000,9 @@ gameLoop
 }
 
 
-/* =========================================
+/* ==================================================
 START GAME
-========================================= */
+================================================== */
 
 function startGame() {
 
@@ -959,15 +1011,11 @@ console.log(
 );
 
 
-/* Start browser audio */
-
-startAudio();
-
-
-/* Reset game */
-
 gameRunning =
 true;
+
+
+/* Reset values */
 
 score =
 0;
@@ -997,19 +1045,32 @@ pursuerProgress =
 0;
 
 
+/* Start audio */
+
+startAudio();
+
+
 /* Reset player */
 
 updatePlayerPosition();
 
 
+if (player) {
+
 player.style.bottom =
 "110px";
+
+}
 
 
 /* Reset pursuer */
 
+if (pursuer) {
+
 pursuer.style.transform =
 "translateX(-50%) scale(0.72)";
+
+}
 
 
 /* Reset display */
@@ -1019,34 +1080,74 @@ updateScore();
 updateEnergy();
 
 
+if (distanceDisplay) {
+
 distanceDisplay.textContent =
 "0 m";
 
+}
 
-/* Remove old objects */
+
+/* Clear old objects */
+
+if (objects) {
 
 objects.innerHTML =
 "";
 
+}
+
+
+if (collectibles) {
+
 collectibles.innerHTML =
 "";
 
+}
+
 
 /* Hide start screen */
+
+if (startScreen) {
 
 startScreen.classList.add(
 "hidden"
 );
 
+}
+
 
 /* Hide game over */
+
+if (gameOverScreen) {
 
 gameOverScreen.classList.add(
 "hidden"
 );
 
+}
 
-/* Start game timers */
+
+/* Clear old timers */
+
+clearInterval(
+obstacleTimer
+);
+
+clearInterval(
+collectibleTimer
+);
+
+clearInterval(
+distanceTimer
+);
+
+clearInterval(
+difficultyTimer
+);
+
+
+/* Start spawning obstacles */
 
 obstacleTimer =
 setInterval(
@@ -1055,6 +1156,8 @@ createObstacle,
 );
 
 
+/* Start spawning coins */
+
 collectibleTimer =
 setInterval(
 createCollectible,
@@ -1062,12 +1165,16 @@ createCollectible,
 );
 
 
+/* Distance counter */
+
 distanceTimer =
 setInterval(
 updateDistance,
 500
 );
 
+
+/* Difficulty */
 
 difficultyTimer =
 setInterval(
@@ -1088,9 +1195,9 @@ gameLoop();
 }
 
 
-/* =========================================
+/* ==================================================
 END GAME
-========================================= */
+================================================== */
 
 function endGame() {
 
@@ -1128,15 +1235,25 @@ difficultyTimer
 );
 
 
-/* Final results */
+/* Final score */
+
+if (finalScoreDisplay) {
 
 finalScoreDisplay.textContent =
 score;
 
+}
+
+
+/* Final distance */
+
+if (finalDistanceDisplay) {
 
 finalDistanceDisplay.textContent =
 distance +
 " m";
+
+}
 
 
 /* Save best score */
@@ -1158,15 +1275,23 @@ bestScore
 }
 
 
+if (bestScoreDisplay) {
+
 bestScoreDisplay.textContent =
 bestScore;
+
+}
 
 
 /* Show game over */
 
+if (gameOverScreen) {
+
 gameOverScreen.classList.remove(
 "hidden"
 );
+
+}
 
 
 playSound(
@@ -1178,9 +1303,9 @@ playSound(
 }
 
 
-/* =========================================
+/* ==================================================
 KEYBOARD CONTROLS
-========================================= */
+================================================== */
 
 document.addEventListener(
 "keydown",
@@ -1234,9 +1359,9 @@ jump();
 );
 
 
-/* =========================================
+/* ==================================================
 MOBILE BUTTONS
-========================================= */
+================================================== */
 
 if (moveLeftButton) {
 
@@ -1268,9 +1393,9 @@ jump
 }
 
 
-/* =========================================
+/* ==================================================
 SWIPE CONTROLS
-========================================= */
+================================================== */
 
 let touchStartX =
 0;
@@ -1278,6 +1403,8 @@ let touchStartX =
 let touchStartY =
 0;
 
+
+if (game) {
 
 game.addEventListener(
 "touchstart",
@@ -1336,6 +1463,8 @@ const minimumSwipe =
 40;
 
 
+/* Swipe left or right */
+
 if (
 Math.abs(deltaX) >
 Math.abs(deltaY)
@@ -1364,17 +1493,14 @@ moveLeft();
 }
 
 
-else {
+/* Swipe up to jump */
 
-
-if (
+else if (
 deltaY <
 -minimumSwipe
 ) {
 
 jump();
-
-}
 
 }
 
@@ -1384,38 +1510,12 @@ passive: true
 }
 );
 
-
-/* =========================================
-START BUTTON
-========================================= */
-
-if (startButton) {
-
-startButton.addEventListener(
-"click",
-startGame
-);
-
 }
 
 
-/* =========================================
-RESTART BUTTON
-========================================= */
-
-if (restartButton) {
-
-restartButton.addEventListener(
-"click",
-startGame
-);
-
-}
-
-
-/* =========================================
+/* ==================================================
 SOUND BUTTON
-========================================= */
+================================================== */
 
 if (soundButton) {
 
@@ -1452,9 +1552,35 @@ soundButton.textContent =
 }
 
 
-/* =========================================
-INITIAL GAME STATE
-========================================= */
+/* ==================================================
+OPTIONAL START BUTTON
+If it exists, it can still start/restart
+the game manually.
+================================================== */
+
+if (startButton) {
+
+startButton.addEventListener(
+"click",
+startGame
+);
+
+}
+
+
+if (restartButton) {
+
+restartButton.addEventListener(
+"click",
+startGame
+);
+
+}
+
+
+/* ==================================================
+INITIAL SETUP
+================================================== */
 
 updatePlayerPosition();
 
@@ -1463,6 +1589,29 @@ updateEnergy();
 updateScore();
 
 
-console.log(
-"Shadow Run JavaScript loaded successfully."
+/* ==================================================
+AUTO START
+================================================== */
+
+window.addEventListener(
+"load",
+() => {
+
+/* Hide start screen */
+
+if (startScreen) {
+
+startScreen.classList.add(
+"hidden"
 );
+
+}
+
+
+/* Start game automatically */
+
+startGame();
+
+}
+);
+

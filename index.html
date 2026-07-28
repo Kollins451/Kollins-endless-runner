@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
 <meta charset="UTF-8">
 
 <meta
@@ -9,39 +8,269 @@ name="viewport"
 content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
 >
 
-<meta
-name="theme-color"
-content="#111827"
->
+<title>Rail Escape</title>
 
-<title>Rail Rush</title>
-
-<link
-rel="stylesheet"
-href="style.css"
->
-
+<link rel="stylesheet" href="style.css">
 </head>
-
 
 <body>
 
-<div id="game-container"></div>
+<!-- GAME -->
+<main id="game">
+
+<!-- BACKGROUND -->
+<div class="sky"></div>
+
+<div class="city">
+<div class="building b1"></div>
+<div class="building b2"></div>
+<div class="building b3"></div>
+<div class="building b4"></div>
+<div class="building b5"></div>
+<div class="building b6"></div>
+</div>
+
+<!-- RAILWAY -->
+<div class="railway">
+
+<div class="track track-left">
+<div class="rail rail-a"></div>
+<div class="rail rail-b"></div>
+</div>
+
+<div class="track track-middle">
+<div class="rail rail-a"></div>
+<div class="rail rail-b"></div>
+</div>
+
+<div class="track track-right">
+<div class="rail rail-a"></div>
+<div class="rail rail-b"></div>
+</div>
+
+<div id="sleepers"></div>
+
+</div>
 
 
-<!-- Phaser -->
+<!-- OBJECTS -->
 
-<script
-src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js">
-</script>
+<div id="world">
+
+<div id="trains"></div>
+
+<div id="barriers"></div>
+
+<div id="coins"></div>
+
+</div>
 
 
-<!-- Our Game -->
+<!-- CHASER -->
 
-<script
-src="game.js">
-</script>
+<div id="chaser" class="character chaser">
+
+<div class="head"></div>
+
+<div class="body"></div>
+
+<div class="arm arm-left"></div>
+
+<div class="arm arm-right"></div>
+
+<div class="leg leg-left"></div>
+
+<div class="leg leg-right"></div>
+
+</div>
+
+
+<!-- PLAYER -->
+
+<div id="player" class="character player">
+
+<div class="head"></div>
+
+<div class="body"></div>
+
+<div class="arm arm-left"></div>
+
+<div class="arm arm-right"></div>
+
+<div class="leg leg-left"></div>
+
+<div class="leg leg-right"></div>
+
+<!-- Skateboard -->
+<div
+id="skateboard"
+class="skateboard"
+>
+<span></span>
+<span></span>
+</div>
+
+</div>
+
+
+<!-- SCOREBOARD -->
+
+<div class="scoreboard">
+
+<div class="stat">
+
+<small>SCORE</small>
+
+<strong id="score">
+0
+</strong>
+
+</div>
+
+
+<div class="stat">
+
+<small>COINS</small>
+
+<strong id="coinScore">
+0
+</strong>
+
+</div>
+
+
+<div class="stat">
+
+<small>DISTANCE</small>
+
+<strong id="distance">
+0m
+</strong>
+
+</div>
+
+</div>
+
+
+<!-- POWER UP -->
+
+<div
+id="powerUp"
+class="power-up"
+>
+
+🛹
+
+<span>
+DOUBLE TAP
+</span>
+
+</div>
+
+
+<!-- LOADING -->
+
+<section
+id="loadingScreen"
+class="screen"
+>
+
+<div class="logo">
+RAIL
+<span>ESCAPE</span>
+</div>
+
+<div class="loading-bar">
+
+<div
+id="loadingProgress"
+></div>
+
+</div>
+
+<p>
+LOADING...
+</p>
+
+</section>
+
+
+<!-- TAP TO START -->
+
+<section
+id="startScreen"
+class="screen hidden"
+>
+
+<div class="logo">
+RAIL
+<span>ESCAPE</span>
+</div>
+
+<p class="subtitle">
+RUN. ESCAPE. SURVIVE.
+</p>
+
+<p class="tap">
+TAP ANYWHERE TO START
+</p>
+
+<div class="controls">
+
+<span>
+SWIPE ← →
+</span>
+
+<span>
+SWIPE ↑ TO JUMP
+</span>
+
+<span>
+DOUBLE TAP 🛹
+</span>
+
+</div>
+
+</section>
+
+
+<!-- GAME OVER -->
+
+<section
+id="gameOverScreen"
+class="screen hidden"
+>
+
+<h1>
+CAUGHT!
+</h1>
+
+<p>
+The chaser caught you.
+</p>
+
+<div class="final-score">
+
+<span>
+SCORE
+</span>
+
+<strong id="finalScore">
+0
+</strong>
+
+</div>
+
+<p class="tap">
+TAP TO RUN AGAIN
+</p>
+
+</section>
+
+</main>
+
+
+<script src="script.js"></script>
 
 </body>
-
 </html>

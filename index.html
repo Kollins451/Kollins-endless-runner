@@ -1,206 +1,246 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
-
 <meta
 name="viewport"
-content="width=device-width, initial-scale=1.0"
+content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
 >
 
-<title>Endless Runner</title>
+<title>Rail Rush Runner</title>
 
-<link
-rel="stylesheet"
-href="style.css"
->
+<link rel="stylesheet" href="style.css">
 
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0878d1">
 </head>
-
 
 <body>
 
+<div id="game">
 
-<div class="game">
+<!-- =========================
+GAME WORLD
+========================== -->
 
+<div id="sky"></div>
 
-<!-- ==========================
-BACKGROUND
-=========================== -->
+<div id="city">
 
-<div class="sky"></div>
-
-<div class="city">
-
-<div class="building building1"></div>
-
-<div class="building building2"></div>
-
-<div class="building building3"></div>
-
-<div class="building building4"></div>
-
-<div class="building building5"></div>
+<div class="building b1"></div>
+<div class="building b2"></div>
+<div class="building b3"></div>
+<div class="building b4"></div>
+<div class="building b5"></div>
+<div class="building b6"></div>
 
 </div>
 
-
-<!-- ==========================
-TRACK
-=========================== -->
-
-<div class="track">
-
-<div class="lane-line line1"></div>
-
-<div class="lane-line line2"></div>
-
+<!-- Background trees -->
+<div id="trees">
+🌴 🌳 🌴 🌳 🌴
 </div>
 
 
-<!-- ==========================
-START SCREEN
-=========================== -->
+<!-- =========================
+RAILWAY TRACK
+========================== -->
 
-<div
-class="start-screen"
-id="startScreen"
->
+<div id="railway">
 
-<h1>🏃 Endless Runner</h1>
-
-<p>
-Run, jump and collect coins!
-</p>
-
-<p class="controls-info">
-Swipe or use arrow keys to move
-</p>
-
-<button id="startButton">
-START GAME
-</button>
-
+<div class="track track-left">
+<div class="rail rail-a"></div>
+<div class="rail rail-b"></div>
+<div class="sleepers"></div>
 </div>
 
-
-<!-- ==========================
-GAME OVER SCREEN
-=========================== -->
-
-<div
-class="game-over-screen"
-id="gameOverScreen"
->
-
-<h1>💥 Game Over!</h1>
-
-<p>
-Your Score:
-<span id="finalScore">0</span>
-</p>
-
-<p>
-Best Score:
-<span id="bestScore">0</span>
-</p>
-
-<button id="restartButton">
-PLAY AGAIN
-</button>
-
+<div class="track track-center">
+<div class="rail rail-a"></div>
+<div class="rail rail-b"></div>
+<div class="sleepers"></div>
 </div>
 
-
-<!-- ==========================
-SCORE
-=========================== -->
-
-<div class="score-board">
-
-<div>
-Score:
-<span id="score">0</span>
-</div>
-
-<div>
-Best:
-<span id="topScore">0</span>
+<div class="track track-right">
+<div class="rail rail-a"></div>
+<div class="rail rail-b"></div>
+<div class="sleepers"></div>
 </div>
 
 </div>
 
 
-<!-- ==========================
+<!-- =========================
+GAME UI
+========================== -->
+
+<div id="topUI">
+
+<div class="score-box">
+<span>🏆</span>
+<strong id="score">0</strong>
+</div>
+
+<div class="coin-box">
+<span>🪙</span>
+<strong id="coinCount">0</strong>
+</div>
+
+<button id="soundButton">🔊</button>
+
+</div>
+
+
+<!-- =========================
 PLAYER
-=========================== -->
+========================== -->
 
-<div
-class="player"
-id="player"
->
+<div id="player">
 
-🏃
+<div class="character">
+
+<div class="head">😎</div>
+
+<div class="body">
+👕
+</div>
+
+<div class="legs">
+👖
+</div>
+
+</div>
 
 </div>
 
 
-<!-- ==========================
-OBSTACLE
-=========================== -->
+<!-- =========================
+OBJECT CONTAINER
+========================== -->
+
+<div id="objects"></div>
+
+
+<!-- =========================
+START SCREEN
+========================== -->
 
 <div
-class="obstacle"
-id="obstacle"
+id="startScreen"
+class="screen"
 >
 
-🚧
+<div class="logo">
+
+<div class="logo-title">
+RAIL RUSH
+</div>
+
+<div class="logo-subtitle">
+ENDLESS RUNNER
+</div>
+
+</div>
+
+<p>
+Run • Jump • Change Lanes • Collect Coins
+</p>
+
+<button
+id="startButton"
+class="main-button"
+>
+▶ START RUN
+</button>
+
+<div class="instructions">
+
+<div>⬅️ Swipe Left</div>
+
+<div>➡️ Swipe Right</div>
+
+<div>⬆️ Swipe Up to Jump</div>
+
+</div>
 
 </div>
 
 
-<!-- ==========================
-TRAIN
-=========================== -->
+<!-- =========================
+GAME OVER SCREEN
+========================== -->
 
 <div
-class="train"
-id="train"
+id="gameOverScreen"
+class="screen hidden"
 >
 
-🚆
+<div class="game-over-title">
+RUN OVER!
+</div>
+
+<div class="results">
+
+<p>
+Score:
+<strong id="finalScore">
+0
+</strong>
+</p>
+
+<p>
+Coins:
+<strong id="finalCoins">
+0
+</strong>
+</p>
+
+<p>
+Best:
+<strong id="bestScore">
+0
+</strong>
+</p>
+
+</div>
+
+<button
+id="restartButton"
+class="main-button"
+>
+🔄 PLAY AGAIN
+</button>
 
 </div>
 
 
-<!-- ==========================
-COINS
-=========================== -->
+<!-- =========================
+MOBILE CONTROLS
+========================== -->
 
-<div
-class="coins"
-id="coins"
->
+<div id="mobileControls">
 
-<div class="coin">🪙</div>
+<button id="leftButton">
+◀
+</button>
 
-<div class="coin">🪙</div>
+<button id="jumpButton">
+▲
+</button>
 
-<div class="coin">🪙</div>
-
-<div class="coin">🪙</div>
-
-<div class="coin">🪙</div>
+<button id="rightButton">
+▶
+</button>
 
 </div>
-
 
 </div>
 
 
 <script src="script.js"></script>
+
+</body>
+</html>
 
 
 </body>

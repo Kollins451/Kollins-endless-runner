@@ -1,11 +1,11 @@
 /* =========================================
 SHADOW RUN
-Chase-Based Endless Runner
+CLEAN GAME JAVASCRIPT
 ========================================= */
 
 
 /* =========================================
-GAME ELEMENTS
+GET HTML ELEMENTS
 ========================================= */
 
 const game = document.getElementById("game");
@@ -77,9 +77,17 @@ let distance = 0;
 
 let energy = 100;
 
-let speed = 6;
+let speed = 5;
 
-let gameTime = 0;
+let currentLane = 1;
+
+let isJumping = false;
+
+let jumpHeight = 0;
+
+let jumpVelocity = 0;
+
+let pursuerProgress = 0;
 
 let animationFrame;
 
@@ -91,41 +99,20 @@ let distanceTimer;
 
 let difficultyTimer;
 
-
-/* =========================================
-PLAYER LANES
-========================================= */
-
-const lanes = [25, 50, 75];
-
-let currentLane = 1;
-
-
-/* =========================================
-PLAYER STATE
-========================================= */
-
-let isJumping = false;
-
-let jumpHeight = 0;
-
-let jumpVelocity = 0;
-
-
-/* =========================================
-PURSUER
-========================================= */
-
-let pursuerDistance = 0;
-
-
-/* =========================================
-SOUND
-========================================= */
-
 let soundEnabled = true;
 
-let audioContext;
+let audioContext = null;
+
+
+/* =========================================
+LANES
+========================================= */
+
+const lanes = [
+25,
+50,
+75
+];
 
 
 /* =========================================
@@ -144,7 +131,7 @@ bestScore;
 
 
 /* =========================================
-AUDIO SYSTEM
+SOUND SYSTEM
 ========================================= */
 
 function startAudio() {
@@ -175,7 +162,9 @@ audioContext.resume();
 }
 
 
-/* Simple sound effect */
+/* =========================================
+PLAY SOUND
+========================================= */
 
 function playSound(
 frequency,
@@ -187,7 +176,9 @@ if (
 !soundEnabled ||
 !audioContext
 ) {
+
 return;
+
 }
 
 const oscillator =
@@ -196,16 +187,19 @@ audioContext.createOscillator();
 const gain =
 audioContext.createGain();
 
+
 oscillator.type =
 type;
 
 oscillator.frequency.value =
 frequency;
 
+
 gain.gain.setValueAtTime(
 0.08,
 audioContext.currentTime
 );
+
 
 gain.gain.exponentialRampToValueAtTime(
 0.001,
@@ -213,13 +207,18 @@ audioContext.currentTime +
 duration
 );
 
-oscillator.connect(gain);
+
+oscillator.connect(
+gain
+);
 
 gain.connect(
 audioContext.destination
 );
 
+
 oscillator.start();
+
 
 oscillator.stop(
 audioContext.currentTime +
@@ -230,7 +229,19 @@ duration
 
 
 /* =========================================
-PLAYER MOVEMENT
+MOVE PLAYER
+========================================= */
+
+function updatePlayerPosition() {
+
+player.style.left =
+lanes[currentLane] + "%";
+
+}
+
+
+/* =========================================
+MOVE LEFT
 ========================================= */
 
 function moveLeft() {
@@ -254,6 +265,10 @@ playSound(
 
 }
 
+
+/* =========================================
+MOVE RIGHT
+========================================= */
 
 function moveRight() {
 
@@ -280,16 +295,6 @@ playSound(
 }
 
 
-/* Update player position */
-
-function updatePlayerPosition() {
-
-player.style.left =
-lanes[currentLane] + "%";
-
-}
-
-
 /* =========================================
 JUMP
 ========================================= */
@@ -300,15 +305,21 @@ if (
 !gameRunning ||
 isJumping
 ) {
+
 return;
+
 }
 
-isJumping = true;
 
-jumpVelocity = 16;
+isJumping =
+true;
+
+jumpVelocity =
+15;
+
 
 playSound(
-520,
+550,
 0.12
 );
 
@@ -316,7 +327,7 @@ playSound(
 
 
 /* =========================================
-JUMP PHYSICS
+UPDATE JUMP
 ========================================= */
 
 function updateJump() {
@@ -325,23 +336,30 @@ if (!isJumping) {
 return;
 }
 
+
 jumpHeight +=
 jumpVelocity;
 
+
 jumpVelocity -=
 0.8;
+
 
 if (
 jumpHeight <= 0
 ) {
 
-jumpHeight = 0;
+jumpHeight =
+0;
 
-jumpVelocity = 0;
+jumpVelocity =
+0;
 
-isJumping = false;
+isJumping =
+false;
 
 }
+
 
 player.style.bottom =
 (
@@ -362,19 +380,22 @@ if (!gameRunning) {
 return;
 }
 
+
 const obstacle =
 document.createElement(
 "div"
 );
 
-obstacle.classList.add(
-"game-object"
-);
 
-const vehicle =
+obstacle.className =
+"game-object";
+
+
+const isVehicle =
 Math.random() > 0.5;
 
-if (vehicle) {
+
+if (isVehicle) {
 
 obstacle.classList.add(
 "vehicle"
@@ -388,19 +409,24 @@ obstacle.classList.add(
 
 }
 
+
 const lane =
 Math.floor(
 Math.random() * 3
 );
 
+
 obstacle.dataset.lane =
 lane;
+
 
 obstacle.style.left =
 lanes[lane] + "%";
 
+
 obstacle.style.top =
 "-100px";
+
 
 objects.appendChild(
 obstacle
@@ -419,32 +445,34 @@ if (!gameRunning) {
 return;
 }
 
+
 const collectible =
 document.createElement(
 "div"
 );
 
-collectible.classList.add(
-"collectible"
-);
 
-collectible.classList.add(
-"game-object"
-);
+collectible.className =
+"game-object collectible";
+
 
 const lane =
 Math.floor(
 Math.random() * 3
 );
 
+
 collectible.dataset.lane =
 lane;
+
 
 collectible.style.left =
 lanes[lane] + "%";
 
+
 collectible.style.top =
 "-50px";
+
 
 collectibles.appendChild(
 collectible
@@ -454,47 +482,91 @@ collectible
 
 
 /* =========================================
-MOVE OBJECTS
+MOVE GAME OBJECTS
 ========================================= */
 
 function updateObjects() {
 
-const allObjects =
+
+const gameObjects =
 document.querySelectorAll(
-".game-object"
+"#objects .game-object"
 );
 
-allObjects.forEach(
+
+gameObjects.forEach(
 object => {
 
-let currentTop =
+let top =
 parseFloat(
 object.style.top
 );
 
-currentTop +=
+
+top +=
 speed;
 
+
 object.style.top =
-currentTop + "px";
+top + "px";
 
 
-/* Collision */
-
-checkCollision(
+checkObstacleCollision(
 object,
-currentTop
+top
 );
 
 
-/* Remove objects */
-
 if (
-currentTop >
-window.innerHeight
+top >
+window.innerHeight +
+150
 ) {
 
 object.remove();
+
+}
+
+}
+);
+
+
+const coins =
+document.querySelectorAll(
+"#collectibles .game-object"
+);
+
+
+coins.forEach(
+coin => {
+
+let top =
+parseFloat(
+coin.style.top
+);
+
+
+top +=
+speed;
+
+
+coin.style.top =
+top + "px";
+
+
+checkCoinCollision(
+coin,
+top
+);
+
+
+if (
+top >
+window.innerHeight +
+100
+) {
+
+coin.remove();
 
 }
 
@@ -505,28 +577,23 @@ object.remove();
 
 
 /* =========================================
-COLLISION DETECTION
+OBSTACLE COLLISION
 ========================================= */
 
-function checkCollision(
-object,
-objectTop
+function checkObstacleCollision(
+obstacle,
+top
 ) {
 
-const objectLane =
+const lane =
 Number(
-object.dataset.lane
+obstacle.dataset.lane
 );
 
-const playerLane =
-currentLane;
-
-
-/* Only check same lane */
 
 if (
-objectLane !==
-playerLane
+lane !==
+currentLane
 ) {
 
 return;
@@ -534,67 +601,30 @@ return;
 }
 
 
-/* Player vertical position */
-
-const playerBottom =
-110 +
-jumpHeight;
+const screenHeight =
+window.innerHeight;
 
 
-/* Obstacle collision */
+const collisionZone =
+screenHeight -
+top;
+
 
 if (
-object.classList.contains(
-"obstacle"
-) ||
-object.classList.contains(
-"vehicle"
-)
+collisionZone >
+70 &&
+
+collisionZone <
+210
 ) {
 
+
 if (
-objectTop >
-window.innerHeight -
-playerBottom -
-170 &&
-
-objectTop <
-window.innerHeight -
-playerBottom -
-50 &&
-
 !isJumping
 ) {
 
 hitObstacle(
-object
-);
-
-}
-
-}
-
-
-/* Collectible */
-
-if (
-object.classList.contains(
-"collectible"
-)
-) {
-
-if (
-objectTop >
-window.innerHeight -
-350 &&
-
-objectTop <
-window.innerHeight -
-80
-) {
-
-collectEnergy(
-object
+obstacle
 );
 
 }
@@ -612,28 +642,33 @@ function hitObstacle(
 obstacle
 ) {
 
+if (
+obstacle.dataset.hit ===
+"true"
+) {
+
+return;
+
+}
+
+
+obstacle.dataset.hit =
+"true";
+
+
 obstacle.remove();
 
+
 energy -=
+25;
+
+
+pursuerProgress +=
 20;
 
-pursuerDistance +=
-15;
 
 updateEnergy();
 
-pursuer.style.transform =
-"translateX(-50%) scale(0.95)";
-
-setTimeout(
-() => {
-
-pursuer.style.transform =
-"translateX(-50%) scale(0.72)";
-
-},
-500
-);
 
 playSound(
 90,
@@ -642,13 +677,17 @@ playSound(
 );
 
 
-/* Game over */
+/* Pursuer gets closer */
+
+updatePursuer();
+
 
 if (
 energy <= 0
 ) {
 
-energy = 0;
+energy =
+0;
 
 endGame();
 
@@ -658,36 +697,109 @@ endGame();
 
 
 /* =========================================
-COLLECT ENERGY
+COIN COLLISION
 ========================================= */
 
-function collectEnergy(
-collectible
+function checkCoinCollision(
+coin,
+top
 ) {
 
-collectible.remove();
+const lane =
+Number(
+coin.dataset.lane
+);
+
+
+if (
+lane !==
+currentLane
+) {
+
+return;
+
+}
+
+
+const screenHeight =
+window.innerHeight;
+
+
+const collisionZone =
+screenHeight -
+top;
+
+
+if (
+collisionZone >
+60 &&
+
+collisionZone <
+220
+) {
+
+collectCoin(
+coin
+);
+
+}
+
+}
+
+
+/* =========================================
+COLLECT COIN
+========================================= */
+
+function collectCoin(
+coin
+) {
+
+if (
+coin.dataset.collected ===
+"true"
+) {
+
+return;
+
+}
+
+
+coin.dataset.collected =
+"true";
+
+
+coin.remove();
+
 
 score +=
 50;
 
+
 energy +=
-10;
+5;
+
 
 if (
 energy >
 100
 ) {
 
-energy = 100;
+energy =
+100;
 
 }
 
-updateEnergy();
 
 updateScore();
 
+updateEnergy();
+
+
+/* Coin sound */
+
 playSound(
-750,
+800,
 0.15,
 "sine"
 );
@@ -696,19 +808,7 @@ playSound(
 
 
 /* =========================================
-ENERGY BAR
-========================================= */
-
-function updateEnergy() {
-
-energyFill.style.width =
-energy + "%";
-
-}
-
-
-/* =========================================
-SCORE
+UPDATE SCORE
 ========================================= */
 
 function updateScore() {
@@ -720,23 +820,40 @@ score;
 
 
 /* =========================================
-DISTANCE
+UPDATE ENERGY
+========================================= */
+
+function updateEnergy() {
+
+energyFill.style.width =
+energy + "%";
+
+}
+
+
+/* =========================================
+UPDATE DISTANCE
 ========================================= */
 
 function updateDistance() {
 
+if (!gameRunning) {
+return;
+}
+
+
 distance +=
 1;
+
+
+score +=
+2;
+
 
 distanceDisplay.textContent =
 distance +
 " m";
 
-
-/* Score increases with distance */
-
-score +=
-1;
 
 updateScore();
 
@@ -744,32 +861,7 @@ updateScore();
 
 
 /* =========================================
-DIFFICULTY
-========================================= */
-
-function increaseDifficulty() {
-
-if (!gameRunning) {
-return;
-}
-
-speed +=
-0.5;
-
-if (
-speed >
-15
-) {
-
-speed = 15;
-
-}
-
-}
-
-
-/* =========================================
-PURSUER SYSTEM
+UPDATE PURSUER
 ========================================= */
 
 function updatePursuer() {
@@ -779,25 +871,10 @@ return;
 }
 
 
-/* The pursuer slowly approaches */
-
-if (
-pursuerDistance <
-100
-) {
-
-pursuerDistance +=
-0.03;
-
-}
-
-
-/* Visual scale */
-
 const scale =
 0.72 +
 (
-pursuerDistance /
+pursuerProgress /
 100
 ) *
 0.35;
@@ -807,10 +884,8 @@ pursuer.style.transform =
 `translateX(-50%) scale(${scale})`;
 
 
-/* If pursuer gets too close */
-
 if (
-pursuerDistance >=
+pursuerProgress >=
 100
 ) {
 
@@ -822,7 +897,35 @@ endGame();
 
 
 /* =========================================
-MAIN GAME LOOP
+INCREASE DIFFICULTY
+========================================= */
+
+function increaseDifficulty() {
+
+if (!gameRunning) {
+return;
+}
+
+
+speed +=
+0.4;
+
+
+if (
+speed >
+12
+) {
+
+speed =
+12;
+
+}
+
+}
+
+
+/* =========================================
+GAME LOOP
 ========================================= */
 
 function gameLoop() {
@@ -831,11 +934,11 @@ if (!gameRunning) {
 return;
 }
 
+
 updateJump();
 
 updateObjects();
 
-updatePursuer();
 
 animationFrame =
 requestAnimationFrame(
@@ -851,7 +954,17 @@ START GAME
 
 function startGame() {
 
+console.log(
+"SHADOW RUN STARTED"
+);
+
+
+/* Start browser audio */
+
 startAudio();
+
+
+/* Reset game */
 
 gameRunning =
 true;
@@ -866,10 +979,7 @@ energy =
 100;
 
 speed =
-6;
-
-pursuerDistance =
-0;
+5;
 
 currentLane =
 1;
@@ -880,7 +990,29 @@ false;
 jumpHeight =
 0;
 
+jumpVelocity =
+0;
+
+pursuerProgress =
+0;
+
+
+/* Reset player */
+
 updatePlayerPosition();
+
+
+player.style.bottom =
+"110px";
+
+
+/* Reset pursuer */
+
+pursuer.style.transform =
+"translateX(-50%) scale(0.72)";
+
+
+/* Reset display */
 
 updateScore();
 
@@ -891,15 +1023,7 @@ distanceDisplay.textContent =
 "0 m";
 
 
-player.style.bottom =
-"110px";
-
-
-pursuer.style.transform =
-"translateX(-50%) scale(0.72)";
-
-
-/* Clear old objects */
+/* Remove old objects */
 
 objects.innerHTML =
 "";
@@ -914,24 +1038,27 @@ startScreen.classList.add(
 "hidden"
 );
 
+
+/* Hide game over */
+
 gameOverScreen.classList.add(
 "hidden"
 );
 
 
-/* Start timers */
+/* Start game timers */
 
 obstacleTimer =
 setInterval(
 createObstacle,
-1200
+1300
 );
 
 
 collectibleTimer =
 setInterval(
 createCollectible,
-1800
+1700
 );
 
 
@@ -946,6 +1073,13 @@ difficultyTimer =
 setInterval(
 increaseDifficulty,
 10000
+);
+
+
+/* Start animation */
+
+cancelAnimationFrame(
+animationFrame
 );
 
 
@@ -964,6 +1098,7 @@ if (!gameRunning) {
 return;
 }
 
+
 gameRunning =
 false;
 
@@ -977,23 +1112,27 @@ clearInterval(
 obstacleTimer
 );
 
+
 clearInterval(
 collectibleTimer
 );
 
+
 clearInterval(
 distanceTimer
 );
+
 
 clearInterval(
 difficultyTimer
 );
 
 
-/* Update final results */
+/* Final results */
 
 finalScoreDisplay.textContent =
 score;
+
 
 finalDistanceDisplay.textContent =
 distance +
@@ -1009,6 +1148,7 @@ bestScore
 
 bestScore =
 score;
+
 
 localStorage.setItem(
 "shadowRunBest",
@@ -1046,9 +1186,11 @@ document.addEventListener(
 "keydown",
 event => {
 
+
 if (
 event.key ===
 "ArrowLeft" ||
+
 event.key.toLowerCase() ===
 "a"
 ) {
@@ -1061,6 +1203,7 @@ moveLeft();
 if (
 event.key ===
 "ArrowRight" ||
+
 event.key.toLowerCase() ===
 "d"
 ) {
@@ -1073,8 +1216,10 @@ moveRight();
 if (
 event.key ===
 "ArrowUp" ||
+
 event.key ===
 " " ||
+
 event.key.toLowerCase() ===
 "w"
 ) {
@@ -1093,22 +1238,34 @@ jump();
 MOBILE BUTTONS
 ========================================= */
 
+if (moveLeftButton) {
+
 moveLeftButton.addEventListener(
-"pointerdown",
+"click",
 moveLeft
 );
 
+}
+
+
+if (moveRightButton) {
 
 moveRightButton.addEventListener(
-"pointerdown",
+"click",
 moveRight
 );
 
+}
+
+
+if (jumpButton) {
 
 jumpButton.addEventListener(
-"pointerdown",
+"click",
 jump
 );
+
+}
 
 
 /* =========================================
@@ -1129,8 +1286,10 @@ event => {
 const touch =
 event.touches[0];
 
+
 touchStartX =
 touch.clientX;
+
 
 touchStartY =
 touch.clientY;
@@ -1146,22 +1305,30 @@ game.addEventListener(
 "touchend",
 event => {
 
+if (!gameRunning) {
+return;
+}
+
+
 const touch =
 event.changedTouches[0];
 
-const endX =
+
+const touchEndX =
 touch.clientX;
 
-const endY =
+
+const touchEndY =
 touch.clientY;
 
 
 const deltaX =
-endX -
+touchEndX -
 touchStartX;
 
+
 const deltaY =
-endY -
+touchEndY -
 touchStartY;
 
 
@@ -1169,12 +1336,11 @@ const minimumSwipe =
 40;
 
 
-/* Horizontal swipe */
-
 if (
 Math.abs(deltaX) >
 Math.abs(deltaY)
 ) {
+
 
 if (
 deltaX >
@@ -1184,6 +1350,7 @@ minimumSwipe
 moveRight();
 
 }
+
 
 else if (
 deltaX <
@@ -1197,9 +1364,8 @@ moveLeft();
 }
 
 
-/* Up swipe */
-
 else {
+
 
 if (
 deltaY <
@@ -1220,28 +1386,43 @@ passive: true
 
 
 /* =========================================
-BUTTON EVENTS
+START BUTTON
 ========================================= */
+
+if (startButton) {
 
 startButton.addEventListener(
 "click",
 startGame
 );
 
+}
+
+
+/* =========================================
+RESTART BUTTON
+========================================= */
+
+if (restartButton) {
 
 restartButton.addEventListener(
 "click",
 startGame
 );
 
+}
+
 
 /* =========================================
 SOUND BUTTON
 ========================================= */
 
+if (soundButton) {
+
 soundButton.addEventListener(
 "click",
 () => {
+
 
 soundEnabled =
 !soundEnabled;
@@ -1254,7 +1435,9 @@ soundEnabled
 soundButton.textContent =
 "SOUND ON";
 
+
 startAudio();
+
 
 } else {
 
@@ -1266,9 +1449,11 @@ soundButton.textContent =
 }
 );
 
+}
+
 
 /* =========================================
-INITIAL STATE
+INITIAL GAME STATE
 ========================================= */
 
 updatePlayerPosition();
@@ -1277,10 +1462,7 @@ updateEnergy();
 
 updateScore();
 
-bestScoreDisplay.textContent =
-bestScore;
 
-gameOverScreen.style.display =
-"flex";
-
-}
+console.log(
+"Shadow Run JavaScript loaded successfully."
+);

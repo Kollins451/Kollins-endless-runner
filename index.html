@@ -1,249 +1,525 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
+
 <meta
 name="viewport"
 content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
 >
 
-<title>Rail Rush Runner</title>
+<title>Shadow Run</title>
 
-<link rel="stylesheet" href="style.css">
+<link
+rel="stylesheet"
+href="style.css"
+>
 
 <!-- PWA -->
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0878d1">
+<link
+rel="manifest"
+href="manifest.json"
+>
+
+<meta
+name="theme-color"
+content="#0b0d12"
+>
+
 </head>
+
 
 <body>
 
+
 <div id="game">
 
-<!-- =========================
-GAME WORLD
-========================== -->
+
+<!-- =================================
+GAME BACKGROUND
+================================== -->
+
+<div id="background">
+
+<!-- Sky -->
 
 <div id="sky"></div>
 
-<div id="city">
 
-<div class="building b1"></div>
-<div class="building b2"></div>
-<div class="building b3"></div>
-<div class="building b4"></div>
-<div class="building b5"></div>
-<div class="building b6"></div>
+<!-- Moon -->
 
-</div>
-
-<!-- Background trees -->
-<div id="trees">
-🌴 🌳 🌴 🌳 🌴
-</div>
+<div id="moon"></div>
 
 
-<!-- =========================
-RAILWAY TRACK
-========================== -->
+<!-- Distant city -->
 
-<div id="railway">
+<div id="distantCity">
 
-<div class="track track-left">
-<div class="rail rail-a"></div>
-<div class="rail rail-b"></div>
-<div class="sleepers"></div>
-</div>
-
-<div class="track track-center">
-<div class="rail rail-a"></div>
-<div class="rail rail-b"></div>
-<div class="sleepers"></div>
-</div>
-
-<div class="track track-right">
-<div class="rail rail-a"></div>
-<div class="rail rail-b"></div>
-<div class="sleepers"></div>
-</div>
+<div class="building"></div>
+<div class="building"></div>
+<div class="building"></div>
+<div class="building"></div>
+<div class="building"></div>
+<div class="building"></div>
+<div class="building"></div>
 
 </div>
 
 
-<!-- =========================
-GAME UI
-========================== -->
+<!-- Street lights -->
 
-<div id="topUI">
+<div id="streetLights">
 
-<div class="score-box">
-<span>🏆</span>
-<strong id="score">0</strong>
-</div>
-
-<div class="coin-box">
-<span>🪙</span>
-<strong id="coinCount">0</strong>
-</div>
-
-<button id="soundButton">🔊</button>
+<div class="street-light"></div>
+<div class="street-light"></div>
+<div class="street-light"></div>
 
 </div>
 
 
-<!-- =========================
-PLAYER
-========================== -->
+<!-- Fog -->
 
-<div id="player">
+<div id="fog"></div>
 
-<div class="character">
-
-<div class="head">😎</div>
-
-<div class="body">
-👕
 </div>
 
-<div class="legs">
-👖
+
+
+<!-- =================================
+GAME WORLD
+================================== -->
+
+<div id="world">
+
+
+<!-- Road -->
+
+<div id="road">
+
+<!-- Lane 1 -->
+
+<div class="lane lane-one">
+
+<div class="road-line"></div>
+
 </div>
+
+
+<!-- Lane 2 -->
+
+<div class="lane lane-two">
+
+<div class="road-line"></div>
+
+</div>
+
+
+<!-- Lane 3 -->
+
+<div class="lane lane-three">
+
+<div class="road-line"></div>
 
 </div>
 
 </div>
 
 
-<!-- =========================
-OBJECT CONTAINER
-========================== -->
 
-<div id="objects"></div>
-
-
-<!-- =========================
-START SCREEN
-========================== -->
+<!-- =================================
+PURSUER
+================================== -->
 
 <div
+id="pursuer"
+aria-label="The pursuer"
+>
+
+<div class="pursuer-shadow"></div>
+
+<div class="pursuer-body">
+
+<div class="pursuer-head"></div>
+
+<div class="pursuer-coat"></div>
+
+</div>
+
+</div>
+
+
+
+<!-- =================================
+PLAYER
+================================== -->
+
+<div
+id="player"
+class="player-lane-two"
+>
+
+<div class="player-shadow"></div>
+
+<div class="runner">
+
+<div class="runner-head"></div>
+
+<div class="runner-body"></div>
+
+<div class="runner-arm arm-left"></div>
+
+<div class="runner-arm arm-right"></div>
+
+<div class="runner-leg leg-left"></div>
+
+<div class="runner-leg leg-right"></div>
+
+</div>
+
+</div>
+
+
+
+<!-- =================================
+DYNAMIC OBJECTS
+================================== -->
+
+<div id="objects">
+
+
+<!-- Obstacles will be created
+by JavaScript -->
+
+
+</div>
+
+
+
+<!-- =================================
+ENERGY TOKENS
+================================== -->
+
+<div id="collectibles">
+
+
+<!-- Tokens will be created
+by JavaScript -->
+
+
+</div>
+
+
+</div>
+
+
+
+<!-- =================================
+TOP HUD
+================================== -->
+
+<header id="hud">
+
+
+<!-- Distance -->
+
+<div class="hud-item">
+
+<span class="hud-label">
+DISTANCE
+</span>
+
+<strong id="distance">
+0 m
+</strong>
+
+</div>
+
+
+
+<!-- Energy -->
+
+<div class="hud-item energy">
+
+<span class="hud-label">
+ENERGY
+</span>
+
+<div class="energy-bar">
+
+<div
+id="energyFill"
+class="energy-fill"
+></div>
+
+</div>
+
+</div>
+
+
+
+<!-- Score -->
+
+<div class="hud-item">
+
+<span class="hud-label">
+SCORE
+</span>
+
+<strong id="score">
+0
+</strong>
+
+</div>
+
+
+</header>
+
+
+
+<!-- =================================
+START SCREEN
+================================== -->
+
+<section
 id="startScreen"
 class="screen"
 >
 
-<div class="logo">
 
-<div class="logo-title">
-RAIL RUSH
-</div>
+<div class="title-container">
 
-<div class="logo-subtitle">
-ENDLESS RUNNER
-</div>
-
-</div>
-
-<p>
-Run • Jump • Change Lanes • Collect Coins
+<p class="small-title">
+A NEW CHASE BEGINS
 </p>
+
+<h1>
+SHADOW
+<span>
+RUN
+</span>
+</h1>
+
+<div class="title-line"></div>
+
+<p class="description">
+
+Run through the city.
+Stay ahead.
+Don't get caught.
+
+</p>
+
+</div>
+
+
 
 <button
 id="startButton"
-class="main-button"
+class="primary-button"
 >
-▶ START RUN
+
+START RUN
+
 </button>
 
-<div class="instructions">
 
-<div>⬅️ Swipe Left</div>
 
-<div>➡️ Swipe Right</div>
+<div class="controls">
 
-<div>⬆️ Swipe Up to Jump</div>
+<div class="control">
+
+<span>
+← →
+</span>
+
+<small>
+MOVE
+</small>
+
+</div>
+
+
+<div class="control">
+
+<span>
+↑
+</span>
+
+<small>
+JUMP
+</small>
+
+</div>
+
+
+<div class="control">
+
+<span>
+SWIPE
+</span>
+
+<small>
+MOBILE
+</small>
 
 </div>
 
 </div>
 
 
-<!-- =========================
-GAME OVER SCREEN
-========================== -->
+</section>
 
-<div
+
+
+<!-- =================================
+GAME OVER
+================================== -->
+
+<section
 id="gameOverScreen"
 class="screen hidden"
 >
 
-<div class="game-over-title">
-RUN OVER!
-</div>
+
+<p class="small-title">
+THE CHASE IS OVER
+</p>
+
+
+<h2>
+YOU WERE
+<span>
+CAUGHT
+</span>
+</h2>
+
 
 <div class="results">
 
-<p>
-Score:
+
+<div class="result">
+
+<span>
+DISTANCE
+</span>
+
+<strong id="finalDistance">
+0 m
+</strong>
+
+</div>
+
+
+<div class="result">
+
+<span>
+SCORE
+</span>
+
 <strong id="finalScore">
 0
 </strong>
-</p>
 
-<p>
-Coins:
-<strong id="finalCoins">
-0
-</strong>
-</p>
+</div>
 
-<p>
-Best:
+
+<div class="result">
+
+<span>
+BEST
+</span>
+
 <strong id="bestScore">
 0
 </strong>
-</p>
 
 </div>
+
+
+</div>
+
+
 
 <button
 id="restartButton"
-class="main-button"
+class="primary-button"
 >
-🔄 PLAY AGAIN
+
+RUN AGAIN
+
 </button>
 
-</div>
+
+</section>
 
 
-<!-- =========================
+
+<!-- =================================
 MOBILE CONTROLS
-========================== -->
+================================== -->
 
 <div id="mobileControls">
 
-<button id="leftButton">
-◀
+
+<button
+id="moveLeft"
+class="control-button"
+>
+
+←
+
 </button>
 
-<button id="jumpButton">
-▲
+
+<button
+id="jump"
+class="control-button jump-button"
+>
+
+↑
+
 </button>
 
-<button id="rightButton">
-▶
+
+<button
+id="moveRight"
+class="control-button"
+>
+
+→
+
 </button>
+
 
 </div>
 
+
+
+<!-- =================================
+SOUND CONTROL
+================================== -->
+
+<button
+id="soundButton"
+class="sound-button"
+>
+
+SOUND ON
+
+</button>
+
+
 </div>
 
 
-<script src="script.js"></script>
+
+<script
+src="script.js"
+></script>
+
 
 </body>
+
 </html>
-
-
-</body>
-
-</html>    
-            

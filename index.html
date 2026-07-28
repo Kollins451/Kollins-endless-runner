@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0"
+>
+
+<title>Endless Runner</title>
+
+<link
+rel="stylesheet"
+href="style.css"
+>
+
+</head>
+
+
+<body>
+
+
+<div class="game">
+
+
+<!-- ==========================
+BACKGROUND
+=========================== -->
+
+<div class="sky"></div>
+
+<div class="city">
+
+<div class="building building1"></div>
+
+<div class="building building2"></div>
+
+<div class="building building3"></div>
+
+<div class="building building4"></div>
+
+<div class="building building5"></div>
+
+</div>
+
+
+<!-- ==========================
+TRACK
+=========================== -->
+
+<div class="track">
+
+<div class="lane-line line1"></div>
+
+<div class="lane-line line2"></div>
+
+</div>
+
+
+<!-- ==========================
+START SCREEN
+=========================== -->
+
+<div
+class="start-screen"
+id="startScreen"
+>
+
+<h1>🏃 Endless Runner</h1>
+
+<p>
+Run, jump and collect coins!
+</p>
+
+<p class="controls-info">
+Swipe or use arrow keys to move
+</p>
+
+<button id="startButton">
+START GAME
+</button>
+
+</div>
+
+
+<!-- ==========================
+GAME OVER SCREEN
+=========================== -->
+
+<div
+class="game-over-screen"
+id="gameOverScreen"
+>
+
+<h1>💥 Game Over!</h1>
+
+<p>
+Your Score:
+<span id="finalScore">0</span>
+</p>
+
+<p>
+Best Score:
+<span id="bestScore">0</span>
+</p>
+
+<button id="restartButton">
+PLAY AGAIN
+</button>
+
+</div>
+
+
+<!-- ==========================
+SCORE
+=========================== -->
+
+<div class="score-board">
+
+<div>
+Score:
+<span id="score">0</span>
+</div>
+
+<div>
+Best:
+<span id="topScore">0</span>
+</div>
+
+</div>
+
+
+<!-- ==========================
+PLAYER
+=========================== -->
+
+<div
+class="player"
+id="player"
+>
+
+🏃
+
+</div>
+
+
+<!-- ==========================
+OBSTACLE
+=========================== -->
+
+<div
+class="obstacle"
+id="obstacle"
+>
+
+🚧
+
+</div>
+
+
+<!-- ==========================
+TRAIN
+=========================== -->
+
+<div
+class="train"
+id="train"
+>
+
+🚆
+
+</div>
+
+
+<!-- ==========================
+COINS
+=========================== -->
+
+<div
+class="coins"
+id="coins"
+>
+
+<div class="coin">🪙</div>
+
+<div class="coin">🪙</div>
+
+<div class="coin">🪙</div>
+
+<div class="coin">🪙</div>
+
+<div class="coin">🪙</div>
+
+</div>
+
+
+</div>
+
+
+<script src="script.js"></script>
+
+
+</body>
+
+</html>    
+            

@@ -1,816 +1,349 @@
-/*
-==================================================
-RAIL RUSH
-PHASER ENDLESS RUNNER
-==================================================
-*/
+/* =====================================================
+RAIL ESCAPE
+ENDLESS RUNNER
+===================================================== */
 
 
-/* ================================================
-GAME VARIABLES
-================================================ */
+/* =========================================
+ELEMENTS
+========================================= */
 
-let game;
+const game =
+document.getElementById(
+"game"
+);
 
-let player;
+const player =
+document.getElementById(
+"player"
+);
 
-let chaser;
+const chaser =
+document.getElementById(
+"chaser"
+);
 
-let lanes = [];
+const skateboard =
+document.getElementById(
+"skateboard"
+);
 
-let currentLane = 1;
+const trains =
+document.getElementById(
+"trains"
+);
 
-let isJumping = false;
+const barriers =
+document.getElementById(
+"barriers"
+);
 
-let jumpTimer = 0;
+const coinsContainer =
+document.getElementById(
+"coins"
+);
 
-let gameStarted = false;
+const loadingScreen =
+document.getElementById(
+"loadingScreen"
+);
 
-let gameOver = false;
+const startScreen =
+document.getElementById(
+"startScreen"
+);
 
-let score = 0;
+const gameOverScreen =
+document.getElementById(
+"gameOverScreen"
+);
 
-let distance = 0;
+const loadingProgress =
+document.getElementById(
+"loadingProgress"
+);
 
-let coins = 0;
+const scoreDisplay =
+document.getElementById(
+"score"
+);
 
-let speed = 280;
+const coinScoreDisplay =
+document.getElementById(
+"coinScore"
+);
 
-let skateboardActive = false;
+const distanceDisplay =
+document.getElementById(
+"distance"
+);
 
-let skateboardUsed = false;
+const finalScoreDisplay =
+document.getElementById(
+"finalScore"
+);
 
-let lastSpawn = 0;
-
-let lastCoinSpawn = 0;
-
-let lastTrainSpawn = 0;
-
-let lastDifficultyIncrease = 0;
-
-let swipeStartX = 0;
-
-let swipeStartY = 0;
-
-let soundsEnabled = true;
-
-
-/* ================================================
-CONFIGURATION
-================================================ */
-
-const config = {
-
-type:
-Phaser.AUTO,
-
-parent:
-"game-container",
-
-width:
-720,
-
-height:
-1280,
-
-backgroundColor:
-"#111827",
-
-scale: {
-
-mode:
-Phaser.Scale.RESIZE,
-
-autoCenter:
-Phaser.Scale.CENTER_BOTH
-
-},
-
-physics: {
-
-default:
-"arcade",
-
-arcade: {
-
-debug:
-false
-
-}
-
-},
-
-scene: {
-
-preload:
-preload,
-
-create:
-create,
-
-update:
-update
-
-}
-
-};
-
-
-game =
-new Phaser.Game(
-config
+const powerUp =
+document.getElementById(
+"powerUp"
 );
 
 
-/* ================================================
-PRELOAD
-================================================ */
+/* =========================================
+GAME STATE
+========================================= */
 
-function preload() {
+let running =
+false;
 
-/*
-We are using generated shapes and text
-instead of copyrighted game assets.
-*/
+let score =
+0;
 
-}
+let coinScore =
+0;
+
+let distance =
+0;
+
+let speed =
+6;
+
+let lane =
+1;
+
+let jump =
+false;
+
+let skateboardActive =
+false;
+
+let gameAnimation;
+
+let spawnTimer;
+
+let coinTimer;
+
+let trainTimer;
+
+let difficultyTimer;
+
+let lastTap =
+0;
+
+let playerX = 50;
+
+let chaserDistance =
+14;
 
 
-/* ================================================
-CREATE
-================================================ */
-
-function create() {
-
-this.scene
-.backgroundColor =
-"#101827";
-
-
-/* ---------------------------------------------
-RAILWAY BACKGROUND
---------------------------------------------- */
-
-createRailway(
-this
-);
-
-
-/* ---------------------------------------------
+/* =========================================
 LANES
---------------------------------------------- */
+========================================= */
 
-lanes = [
+const lanePositions = [
 
-this.scale.width * 0.30,
+30,
 
-this.scale.width * 0.50,
+50,
 
-this.scale.width * 0.70
+70
 
 ];
 
 
-/* ---------------------------------------------
-PLAYER
---------------------------------------------- */
+/* =========================================
+LOADING
+========================================= */
 
-player =
-this.add
-.rectangle(
+let loading =
+0;
 
-lanes[1],
 
-this.scale.height - 250,
-
-55,
-
-90,
-
-0x22c55e
-
-)
-.setDepth(20);
-
-
-player.setStrokeStyle(
-4,
-0xffffff
-);
-
-
-/* Player face */
-
-this.add
-.circle(
-
-player.x,
-
-player.y - 30,
-
-18,
-
-0xffcc99
-
-)
-.setDepth(21);
-
-
-/* ---------------------------------------------
-CHASER
---------------------------------------------- */
-
-chaser =
-this.add
-.rectangle(
-
-lanes[1],
-
-this.scale.height - 100,
-
-70,
-
-100,
-
-0xef4444
-
-)
-.setDepth(15);
-
-
-chaser.setStrokeStyle(
-4,
-0xffffff
-);
-
-
-/* ---------------------------------------------
-UI
---------------------------------------------- */
-
-createUI(
-this
-);
-
-
-/* ---------------------------------------------
-TAP TO START
---------------------------------------------- */
-
-createStartScreen(
-this
-);
-
-
-/* ---------------------------------------------
-INPUT
---------------------------------------------- */
-
-setupControls(
-this
-);
-
-
-/* ---------------------------------------------
-RESIZE
---------------------------------------------- */
-
-this.scale.on(
-"resize",
-resizeGame,
-this
-);
-
-}
-
-
-/* ================================================
-RAILWAY
-================================================ */
-
-function createRailway(
-scene
-) {
-
-const width =
-scene.scale.width;
-
-const height =
-scene.scale.height;
-
-
-/* Sky */
-
-scene.add
-.rectangle(
-
-width / 2,
-
-height / 2,
-
-width,
-
-height,
-
-0x7dd3fc
-
-);
-
-
-/* Distant city */
-
-for (
-let i = 0;
-i < 12;
-i++
-) {
-
-const buildingHeight =
-Phaser.Math.Between(
-120,
-320
-);
-
-
-scene.add
-.rectangle(
-
-i *
-(
-width / 10
-),
-
-height -
-500 -
-buildingHeight / 2,
-
-100,
-
-buildingHeight,
-
-Phaser.Math.RND.pick([
-
-0x334155,
-
-0x475569,
-
-0x1e293b,
-
-0x64748b
-
-])
-
-);
-
-}
-
-
-/* Railway ground */
-
-scene.add
-.rectangle(
-
-width / 2,
-
-height - 300,
-
-width,
-
-700,
-
-0x374151
-
-);
-
-
-/* Track lanes */
-
-for (
-let lane = 0;
-lane < 3;
-lane++
-) {
-
-const x =
-width *
-(
-0.30 +
-lane *
-0.20
-);
-
-
-/* Rails */
-
-scene.add
-.rectangle(
-
-x - 35,
-
-height / 2,
-
-8,
-
-height,
-
-0x94a3b8
-
-);
-
-
-scene.add
-.rectangle(
-
-x + 35,
-
-height / 2,
-
-8,
-
-height,
-
-0x94a3b8
-
-);
-
-
-/* Sleepers */
-
-for (
-let y = 300;
-y < height;
-y += 100
-) {
-
-scene.add
-.rectangle(
-
-x,
-
-y,
-
-100,
-
-14,
-
-0x78350f
-
-);
-
-}
-
-}
-
-
-/* Side fences */
-
-scene.add
-.rectangle(
-
-width * 0.08,
-
-height / 2,
-
-12,
-
-height,
-
-0x64748b
-
-);
-
-
-scene.add
-.rectangle(
-
-width * 0.92,
-
-height / 2,
-
-12,
-
-height,
-
-0x64748b
-
-);
-
-}
-
-
-/* ================================================
-UI
-================================================ */
-
-function createUI(
-scene
-) {
-
-scene.scoreText =
-scene.add
-.text(
-
-25,
-
-25,
-
-"SCORE 0",
-
-{
-
-fontSize:
-"32px",
-
-color:
-"#ffffff",
-
-fontStyle:
-"bold"
-
-}
-
-)
-.setDepth(100);
-
-
-scene.distanceText =
-scene.add
-.text(
-
-25,
-
-65,
-
-"DISTANCE 0m",
-
-{
-
-fontSize:
-"22px",
-
-color:
-"#e5e7eb"
-
-}
-
-)
-.setDepth(100);
-
-
-scene.coinText =
-scene.add
-.text(
-
-25,
-
-100,
-
-"🪙 0",
-
-{
-
-fontSize:
-"24px",
-
-color:
-"#fde047"
-
-}
-
-)
-.setDepth(100);
-
-
-scene.powerText =
-scene.add
-.text(
-
-25,
-
-140,
-
-"SKATEBOARD: OFF",
-
-{
-
-fontSize:
-"18px",
-
-color:
-"#ffffff"
-
-}
-
-)
-.setDepth(100);
-
-}
-
-
-/* ================================================
-START SCREEN
-================================================ */
-
-function createStartScreen(
-scene
-) {
-
-scene.startOverlay =
-scene.add
-.rectangle(
-
-scene.scale.width / 2,
-
-scene.scale.height / 2,
-
-scene.scale.width,
-
-scene.scale.height,
-
-0x000000,
-
-0.65
-
-)
-.setDepth(200);
-
-
-scene.startTitle =
-scene.add
-.text(
-
-scene.scale.width / 2,
-
-scene.scale.height * 0.35,
-
-"RAIL RUSH",
-
-{
-
-fontSize:
-"70px",
-
-fontStyle:
-"bold",
-
-color:
-"#ffffff",
-
-stroke:
-"#000000",
-
-strokeThickness:
-10
-
-}
-
-)
-.setOrigin(
-0.5
-)
-.setDepth(201);
-
-
-scene.startText =
-scene.add
-.text(
-
-scene.scale.width / 2,
-
-scene.scale.height * 0.55,
-
-"TAP ANYWHERE TO RUN",
-
-{
-
-fontSize:
-"32px",
-
-color:
-"#facc15",
-
-fontStyle:
-"bold"
-
-}
-
-)
-.setOrigin(
-0.5
-)
-.setDepth(201);
-
-
-scene.input.once(
-"pointerdown",
+const loadingTimer =
+setInterval(
 () => {
 
-startGame(
-scene
-);
-
-}
-);
-
-}
+loading +=
+Math.random() *
+12;
 
 
-/* ================================================
-START GAME
-================================================ */
-
-function startGame(
-scene
+if (
+loading >=
+100
 ) {
 
-if (gameStarted) {
+loading =
+100;
+
+
+clearInterval(
+loadingTimer
+);
+
+
+loadingProgress
+.style
+.width =
+"100%";
+
+
+setTimeout(
+() => {
+
+loadingScreen
+.classList
+.add(
+"hidden"
+);
+
+
+startScreen
+.classList
+.remove(
+"hidden"
+);
+
+},
+500
+);
+
+}
+
+
+loadingProgress
+.style
+.width =
+loading +
+"%";
+
+},
+150
+);
+
+
+/* =========================================
+START GAME
+========================================= */
+
+function startGame() {
+
+if (
+running
+) {
 
 return;
 
 }
 
 
-gameStarted =
+running =
 true;
-
-
-gameOver =
-false;
 
 
 score =
 0;
 
+coinScore =
+0;
 
 distance =
 0;
 
-
-coins =
-0;
-
-
 speed =
-280;
+6;
 
-
-skateboardActive =
-false;
-
-
-skateboardUsed =
-false;
-
-
-currentLane =
+lane =
 1;
 
+playerX =
+50;
 
-player.x =
-lanes[1];
-
-
-chaser.x =
-lanes[1];
+chaserDistance =
+14;
 
 
-scene.startOverlay
-.setVisible(
-false
+player
+.style
+.left =
+"50%";
+
+
+chaser
+.style
+.left =
+"50%";
+
+
+startScreen
+.classList
+.add(
+"hidden"
 );
 
 
-scene.startTitle
-.setVisible(
-false
+gameOverScreen
+.classList
+.add(
+"hidden"
 );
 
 
-scene.startText
-.setVisible(
-false
+clearWorld();
+
+
+updateScore();
+
+
+spawnTimer =
+setInterval(
+spawnBarrier,
+1300
 );
 
 
-updateUI(
-scene
+coinTimer =
+setInterval(
+spawnCoin,
+850
+);
+
+
+trainTimer =
+setInterval(
+spawnTrain,
+4000
+);
+
+
+difficultyTimer =
+setInterval(
+() => {
+
+speed +=
+.5;
+
+},
+8000
+);
+
+
+gameAnimation =
+requestAnimationFrame(
+gameLoop
 );
 
 }
 
 
-/* ================================================
-UPDATE
-================================================ */
+/* =========================================
+GAME LOOP
+========================================= */
 
-function update(
-time,
-delta
-) {
+function gameLoop() {
 
 if (
-!gameStarted ||
-gameOver
+!running
 ) {
 
 return;
@@ -818,450 +351,95 @@ return;
 }
 
 
-/* ---------------------------------------------
-DISTANCE
---------------------------------------------- */
-
 distance +=
 speed *
-delta /
-100000;
+.015;
 
 
 score +=
 Math.floor(
 speed *
-delta /
-10000
+.02
 );
 
 
-/* ---------------------------------------------
-SPEED
---------------------------------------------- */
+/* Chaser movement */
 
-if (
-time -
-lastDifficultyIncrease >
-10000
-) {
-
-speed +=
-20;
+chaserDistance -=
+0.002;
 
 
-lastDifficultyIncrease =
-time;
-
-}
-
-
-/* ---------------------------------------------
-SPAWN OBSTACLES
---------------------------------------------- */
-
-if (
-time -
-lastSpawn >
-1200
-) {
-
-spawnBarrier(
-this
-);
-
-
-lastSpawn =
-time;
-
-}
-
-
-/* ---------------------------------------------
-SPAWN COINS
---------------------------------------------- */
-
-if (
-time -
-lastCoinSpawn >
-800
-) {
-
-spawnCoin(
-this
-);
-
-
-lastCoinSpawn =
-time;
-
-}
-
-
-/* ---------------------------------------------
-SPAWN TRAINS
---------------------------------------------- */
-
-if (
-time -
-lastTrainSpawn >
-5000
-) {
-
-spawnTrain(
-this
-);
-
-
-lastTrainSpawn =
-time;
-
-}
-
-
-/* ---------------------------------------------
-PLAYER JUMP
---------------------------------------------- */
-
-if (isJumping) {
-
-jumpTimer -=
-delta;
-
-
-player.y -=
-1.5;
+chaser.style.bottom =
+(
+11 +
+(
+14 -
+chaserDistance
+) *
+.2
+) +
+"%";
 
 
 if (
-jumpTimer <=
-0
-) {
-
-isJumping =
-false;
-
-
-player.y =
-this.scale.height -
-250;
-
-}
-
-}
-
-
-/* ---------------------------------------------
-CHASER
---------------------------------------------- */
-
-if (
-chaser.x <
-player.x
-) {
-
-chaser.x +=
-0.5;
-
-}
-
-
-if (
-chaser.x >
-player.x
-) {
-
-chaser.x -=
-0.5;
-
-}
-
-
-/* ---------------------------------------------
-UPDATE UI
---------------------------------------------- */
-
-updateUI(
-this
-);
-
-}
-
-
-/* ================================================
-SPAWN BARRIER
-================================================ */
-
-function spawnBarrier(
-scene
-) {
-
-const lane =
-Phaser.Math.Between(
-0,
+chaserDistance <=
 2
+) {
+
+endGame();
+
+return;
+
+}
+
+
+updateScore();
+
+
+gameAnimation =
+requestAnimationFrame(
+gameLoop
+);
+
+}
+
+
+/* =========================================
+SCORE
+========================================= */
+
+function updateScore() {
+
+scoreDisplay
+.textContent =
+Math.floor(
+score
 );
 
 
-const barrier =
-scene.add
-.rectangle(
-
-lanes[lane],
-
--100,
-
-90,
-
-70,
-
-0xf97316
-
-)
-.setDepth(10);
+coinScoreDisplay
+.textContent =
+coinScore;
 
 
-scene.tweens.add({
+distanceDisplay
+.textContent =
+Math.floor(
+distance
+) +
+"m";
 
-targets:
-barrier,
+}
 
-y:
-scene.scale.height +
-200,
 
-duration:
-5000,
+/* =========================================
+MOVE LEFT
+========================================= */
 
-onUpdate:
-() => {
+function moveLeft() {
 
 if (
-checkCollision(
-player,
-barrier
-)
-) {
-
-handleCrash(
-barrier,
-scene
-);
-
-}
-
-},
-
-onComplete:
-() => {
-
-barrier.destroy();
-
-}
-
-});
-
-}
-
-
-/* ================================================
-SPAWN COIN
-================================================ */
-
-function spawnCoin(
-scene
-) {
-
-const lane =
-Phaser.Math.Between(
-0,
-2
-);
-
-
-const coin =
-scene.add
-.circle(
-
-lanes[lane],
-
--50,
-
-20,
-
-0xfacc15
-
-)
-.setDepth(12);
-
-
-scene.tweens.add({
-
-targets:
-coin,
-
-y:
-scene.scale.height +
-100,
-
-duration:
-4500,
-
-onUpdate:
-() => {
-
-if (
-checkCollision(
-player,
-coin
-)
-) {
-
-collectCoin(
-coin,
-scene
-);
-
-}
-
-},
-
-onComplete:
-() => {
-
-coin.destroy();
-
-}
-
-});
-
-}
-
-
-/* ================================================
-SPAWN TRAIN
-================================================ */
-
-function spawnTrain(
-scene
-) {
-
-const lane =
-Phaser.Math.Between(
-0,
-2
-);
-
-
-const train =
-scene.add
-.rectangle(
-
-lanes[lane],
-
--400,
-
-140,
-
-450,
-
-0x2563eb
-
-)
-.setDepth(8);
-
-
-train.setStrokeStyle(
-8,
-0xeab308
-);
-
-
-scene.tweens.add({
-
-targets:
-train,
-
-y:
-scene.scale.height +
-500,
-
-duration:
-6500,
-
-onUpdate:
-() => {
-
-if (
-checkCollision(
-player,
-train
-)
-) {
-
-handleCrash(
-train,
-scene
-);
-
-}
-
-},
-
-onComplete:
-() => {
-
-train.destroy();
-
-}
-
-});
-
-}
-
-
-/* ================================================
-COLLISION
-================================================ */
-
-function checkCollision(
-a,
-b
-) {
-
-if (
-!a ||
-!b
-) {
-
-return false;
-
-}
-
-
-return Phaser.Geom.Intersects.RectangleToRectangle(
-
-a.getBounds(),
-
-b.getBounds()
-
-);
-
-}
-
-
-/* ================================================
-CRASH
-================================================ */
-
-function handleCrash(
-obstacle,
-scene
-) {
-
-if (
-!obstacle ||
-!obstacle.active
+!running
 ) {
 
 return;
@@ -1269,7 +447,519 @@ return;
 }
 
 
-obstacle.destroy();
+if (
+lane >
+0
+) {
+
+lane--;
+
+playerX =
+lanePositions[
+lane
+];
+
+
+player
+.style
+.left =
+playerX +
+"%";
+
+
+chaser
+.style
+.left =
+playerX +
+"%";
+
+}
+
+}
+
+
+/* =========================================
+MOVE RIGHT
+========================================= */
+
+function moveRight() {
+
+if (
+!running
+) {
+
+return;
+
+}
+
+
+if (
+lane <
+2
+) {
+
+lane++;
+
+playerX =
+lanePositions[
+lane
+];
+
+
+player
+.style
+.left =
+playerX +
+"%";
+
+
+chaser
+.style
+.left =
+playerX +
+"%";
+
+}
+
+}
+
+
+/* =========================================
+JUMP
+========================================= */
+
+function jumpPlayer() {
+
+if (
+!running ||
+jump
+) {
+
+return;
+
+}
+
+
+jump =
+true;
+
+
+player
+.style
+.bottom =
+"32%";
+
+
+setTimeout(
+() => {
+
+player
+.style
+.bottom =
+"19%";
+
+
+jump =
+false;
+
+},
+650
+);
+
+}
+
+
+/* =========================================
+SPAWN BARRIER
+========================================= */
+
+function spawnBarrier() {
+
+if (
+!running
+) {
+
+return;
+
+}
+
+
+const obstacle =
+document.createElement(
+"div"
+);
+
+
+obstacle.className =
+"barrier";
+
+
+const selectedLane =
+Math.floor(
+Math.random() *
+3
+);
+
+
+obstacle.dataset.lane =
+selectedLane;
+
+
+obstacle.style.left =
+lanePositions[
+selectedLane
+] +
+"%";
+
+
+obstacle.style.top =
+"-100px";
+
+
+barriers.appendChild(
+obstacle
+);
+
+
+moveObject(
+obstacle,
+"barrier"
+);
+
+}
+
+
+/* =========================================
+SPAWN COIN
+========================================= */
+
+function spawnCoin() {
+
+if (
+!running
+) {
+
+return;
+
+}
+
+
+const coin =
+document.createElement(
+"div"
+);
+
+
+coin.className =
+"coin";
+
+
+const selectedLane =
+Math.floor(
+Math.random() *
+3
+);
+
+
+coin.dataset.lane =
+selectedLane;
+
+
+coin.style.left =
+lanePositions[
+selectedLane
+] +
+"%";
+
+
+coin.style.top =
+"-50px";
+
+
+coinsContainer.appendChild(
+coin
+);
+
+
+moveObject(
+coin,
+"coin"
+);
+
+}
+
+
+/* =========================================
+SPAWN TRAIN
+========================================= */
+
+function spawnTrain() {
+
+if (
+!running
+) {
+
+return;
+
+}
+
+
+const train =
+document.createElement(
+"div"
+);
+
+
+train.className =
+"train";
+
+
+const selectedLane =
+Math.floor(
+Math.random() *
+3
+);
+
+
+train.dataset.lane =
+selectedLane;
+
+
+train.style.left =
+lanePositions[
+selectedLane
+] +
+"%";
+
+
+train.style.top =
+"-350px";
+
+
+trains.appendChild(
+train
+);
+
+
+moveObject(
+train,
+"train"
+);
+
+}
+
+
+/* =========================================
+MOVE OBJECT
+========================================= */
+
+function moveObject(
+object,
+type
+) {
+
+let top =
+parseFloat(
+object.style.top
+);
+
+
+const timer =
+setInterval(
+() => {
+
+if (
+!running
+) {
+
+clearInterval(
+timer
+);
+
+return;
+
+}
+
+
+top +=
+speed;
+
+
+object.style.top =
+top +
+"px";
+
+
+checkCollision(
+object,
+type
+);
+
+
+if (
+top >
+window.innerHeight +
+400
+) {
+
+object.remove();
+
+
+clearInterval(
+timer
+);
+
+}
+
+},
+30
+);
+
+}
+
+
+/* =========================================
+COLLISION
+========================================= */
+
+function checkCollision(
+object,
+type
+) {
+
+const objectLane =
+Number(
+object.dataset.lane
+);
+
+
+if (
+objectLane !==
+lane
+) {
+
+return;
+
+}
+
+
+const playerRect =
+player.getBoundingClientRect();
+
+
+const objectRect =
+object.getBoundingClientRect();
+
+
+const collision =
+playerRect.left <
+objectRect.right &&
+
+playerRect.right >
+objectRect.left &&
+
+playerRect.top <
+objectRect.bottom &&
+
+playerRect.bottom >
+objectRect.top;
+
+
+if (
+collision
+) {
+
+if (
+type ===
+"coin"
+) {
+
+collectCoin(
+object
+);
+
+}
+
+
+else {
+
+hitObstacle(
+object
+);
+
+}
+
+}
+
+}
+
+
+/* =========================================
+COLLECT COIN
+========================================= */
+
+function collectCoin(
+coin
+) {
+
+if (
+!coin ||
+!coin.parentNode
+) {
+
+return;
+
+}
+
+
+coin.remove();
+
+
+coinScore++;
+
+score +=
+100;
+
+
+/* Chance to get skateboard */
+
+if (
+Math.random() >
+.85
+) {
+
+skateboardActive =
+true;
+
+
+powerUp
+.innerHTML =
+"🛹<span>DOUBLE TAP TO USE</span>";
+
+}
+
+}
+
+
+/* =========================================
+HIT OBSTACLE
+========================================= */
+
+function hitObstacle(
+object
+) {
+
+if (
+!object ||
+!object.parentNode
+) {
+
+return;
+
+}
+
+
+object.remove();
 
 
 /* Skateboard saves player */
@@ -1282,13 +972,33 @@ skateboardActive =
 false;
 
 
-skateboardUsed =
-true;
+player
+.classList
+.add(
+"skating"
+);
 
 
-scene.powerText
-.setText(
-"SKATEBOARD USED!"
+powerUp
+.innerHTML =
+"🛹 SKATEBOARD USED";
+
+
+chaserDistance +=
+5;
+
+
+setTimeout(
+() => {
+
+player
+.classList
+.remove(
+"skating"
+);
+
+},
+1000
 );
 
 
@@ -1297,307 +1007,228 @@ return;
 }
 
 
-/* No skateboard */
+/* Crash without skateboard */
 
-chaser.y -=
-50;
-
-
-speed -=
-40;
+chaserDistance -=
+3;
 
 
 if (
-speed <
-180
+chaserDistance <=
+2
 ) {
 
-speed =
-180;
+endGame();
+
+}
 
 }
 
 
-/* Chaser catches player */
+/* =========================================
+DOUBLE TAP SKATEBOARD
+========================================= */
 
-if (
-skateboardUsed
-) {
-
-endGame(
-scene
+game.addEventListener(
+"touchend",
+handleDoubleTap
 );
 
-}
 
-}
+game.addEventListener(
+"click",
+handleDoubleTap
+);
 
 
-/* ================================================
-COLLECT COIN
-================================================ */
-
-function collectCoin(
-coin,
-scene
-) {
+function handleDoubleTap() {
 
 if (
-!coin.active
+!running
 ) {
+
+startGame();
 
 return;
 
 }
 
 
-coin.destroy();
+const now =
+Date.now();
 
-
-coins++;
-
-
-score +=
-100;
-
-
-/* Random chance to get skateboard */
 
 if (
-Math.random() >
-0.90
+now -
+lastTap <
+350
 ) {
+
+activateSkateboard();
+
+}
+
+
+lastTap =
+now;
+
+}
+
+
+/* =========================================
+ACTIVATE SKATEBOARD
+========================================= */
+
+function activateSkateboard() {
+
+if (
+!skateboardActive
+) {
+
+return;
+
+}
+
 
 skateboardActive =
-true;
-
-
-skateboardUsed =
 false;
 
 
-scene.powerText
-.setText(
-"🛹 SKATEBOARD ACTIVE"
+player
+.classList
+.add(
+"skating"
 );
 
-}
 
-}
-
-
-/* ================================================
-END GAME
-================================================ */
-
-function endGame(
-scene
-) {
-
-gameOver =
-true;
+powerUp
+.innerHTML =
+"🛹 SKATEBOARD ACTIVE";
 
 
-scene.add
-.rectangle(
+/* Skateboard gives temporary protection */
 
-scene.scale.width / 2,
-
-scene.scale.height / 2,
-
-scene.scale.width,
-
-scene.scale.height,
-
-0x000000,
-
-0.75
-
-)
-.setDepth(300);
-
-
-scene.add
-.text(
-
-scene.scale.width / 2,
-
-scene.scale.height * 0.40,
-
-"CAUGHT!",
-
-{
-
-fontSize:
-"80px",
-
-color:
-"#ef4444",
-
-fontStyle:
-"bold"
-
-}
-
-)
-.setOrigin(
-0.5
-)
-.setDepth(301);
-
-
-scene.add
-.text(
-
-scene.scale.width / 2,
-
-scene.scale.height * 0.50,
-
-"The chaser caught you.",
-
-{
-
-fontSize:
-"30px",
-
-color:
-"#ffffff"
-
-}
-
-)
-.setOrigin(
-0.5
-)
-.setDepth(301);
-
-
-scene.add
-.text(
-
-scene.scale.width / 2,
-
-scene.scale.height * 0.60,
-
-"TAP TO RUN AGAIN",
-
-{
-
-fontSize:
-"28px",
-
-color:
-"#facc15",
-
-fontStyle:
-"bold"
-
-}
-
-)
-.setOrigin(
-0.5
-)
-.setDepth(301);
-
-
-scene.input.once(
-"pointerdown",
+setTimeout(
 () => {
 
-scene.scene.restart();
+player
+.classList
+.remove(
+"skating"
+);
 
-}
+
+powerUp
+.innerHTML =
+"🛹 POWER-UP EMPTY";
+
+},
+5000
 );
 
 }
 
 
-/* ================================================
-CONTROLS
-================================================ */
+/* =========================================
+KEYBOARD
+========================================= */
 
-function setupControls(
-scene
+document.addEventListener(
+"keydown",
+event => {
+
+if (
+event.key ===
+"ArrowLeft"
 ) {
-
-
-/* Keyboard */
-
-scene.input.keyboard.on(
-"keydown-LEFT",
-() => {
 
 moveLeft();
 
 }
-);
 
 
-scene.input.keyboard.on(
-"keydown-RIGHT",
-() => {
+if (
+event.key ===
+"ArrowRight"
+) {
 
 moveRight();
 
 }
-);
 
-
-scene.input.keyboard.on(
-"keydown-UP",
-() => {
-
-jump();
-
-}
-);
-
-
-/* Touch */
-
-scene.input.on(
-"pointerdown",
-pointer => {
-
-swipeStartX =
-pointer.x;
-
-swipeStartY =
-pointer.y;
-
-}
-);
-
-
-scene.input.on(
-"pointerup",
-pointer => {
 
 if (
-!gameStarted
+event.key ===
+"ArrowUp" ||
+event.key ===
+" "
 ) {
 
-return;
+jumpPlayer();
 
 }
+
+}
+);
+
+
+/* =========================================
+SWIPE CONTROLS
+========================================= */
+
+let startX =
+0;
+
+let startY =
+0;
+
+
+game.addEventListener(
+"touchstart",
+event => {
+
+startX =
+event.changedTouches[0]
+.screenX;
+
+startY =
+event.changedTouches[0]
+.screenY;
+
+},
+{
+passive: true
+}
+);
+
+
+game.addEventListener(
+"touchend",
+event => {
+
+const endX =
+event.changedTouches[0]
+.screenX;
+
+const endY =
+event.changedTouches[0]
+.screenY;
 
 
 const deltaX =
-pointer.x -
-swipeStartX;
+endX -
+startX;
 
 
 const deltaY =
-pointer.y -
-swipeStartY;
+endY -
+startY;
 
 
 if (
 Math.abs(deltaX) >
 Math.abs(deltaY)
 ) {
-
 
 if (
 deltaX >
@@ -1609,7 +1240,7 @@ moveRight();
 }
 
 
-else if (
+if (
 deltaX <
 -50
 ) {
@@ -1620,73 +1251,34 @@ moveLeft();
 
 }
 
+else {
 
-else if (
+if (
 deltaY <
 -50
 ) {
 
-jump();
+jumpPlayer();
 
 }
 
+}
+
+},
+{
+passive: true
 }
 );
 
-}
 
+/* =========================================
+GAME OVER
+========================================= */
 
-/* ================================================
-MOVE LEFT
-================================================ */
-
-function moveLeft() {
+function endGame() {
 
 if (
-currentLane >
-0
-) {
-
-currentLane--;
-
-player.x =
-lanes[currentLane];
-
-}
-
-}
-
-
-/* ================================================
-MOVE RIGHT
-================================================ */
-
-function moveRight() {
-
-if (
-currentLane <
-2
-) {
-
-currentLane++;
-
-player.x =
-lanes[currentLane];
-
-}
-
-}
-
-
-/* ================================================
-JUMP
-================================================ */
-
-function jump() {
-
-if (
-isJumping ||
-!gameStarted
+!running
 ) {
 
 return;
@@ -1694,105 +1286,99 @@ return;
 }
 
 
-isJumping =
-true;
+running =
+false;
 
 
-jumpTimer =
-700;
+cancelAnimationFrame(
+gameAnimation
+);
 
-}
+
+clearInterval(
+spawnTimer
+);
+
+clearInterval(
+coinTimer
+);
+
+clearInterval(
+trainTimer
+);
+
+clearInterval(
+difficultyTimer
+);
 
 
-/* ================================================
-UPDATE UI
-================================================ */
-
-function updateUI(
-scene
-) {
-
-if (
-scene.scoreText
-) {
-
-scene.scoreText
-.setText(
-"SCORE " +
+finalScoreDisplay
+.textContent =
+Math.floor(
 score
 );
 
-}
 
-
-if (
-scene.distanceText
-) {
-
-scene.distanceText
-.setText(
-
-"DISTANCE " +
-Math.floor(
-distance
-) +
-"m"
-
+gameOverScreen
+.classList
+.remove(
+"hidden"
 );
 
 }
 
 
-if (
-scene.coinText
-) {
+/* =========================================
+RESTART
+========================================= */
 
-scene.coinText
-.setText(
+gameOverScreen.addEventListener(
+"click",
+() => {
 
-"🪙 " +
-coins
+clearWorld();
 
+
+gameOverScreen
+.classList
+.add(
+"hidden"
 );
 
-}
+
+startGame();
 
 }
+);
 
 
-/* ================================================
-RESIZE
-================================================ */
+/* =========================================
+CLEAR WORLD
+========================================= */
 
-function resizeGame(
-size
-) {
+function clearWorld() {
 
-if (!player) {
+trains.innerHTML =
+"";
 
-return;
+barriers.innerHTML =
+"";
 
-}
-
-
-lanes = [
-
-size.width * 0.30,
-
-size.width * 0.50,
-
-size.width * 0.70
-
-];
-
-
-player.x =
-lanes[currentLane];
-
-
-chaser.x =
-lanes[currentLane];
+coinsContainer.innerHTML =
+"";
 
 }
 
 
+/* =========================================
+START SCREEN
+========================================= */
+
+startScreen.addEventListener(
+"click",
+() => {
+
+startGame();
+
+}
+);

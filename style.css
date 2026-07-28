@@ -1,141 +1,703 @@
-/* =========================================
-RAIL RUSH — MAIN GAME STYLE
-========================================= */
-
 * {
 margin: 0;
 padding: 0;
 box-sizing: border-box;
 }
 
+
 html,
 body {
+
 width: 100%;
 height: 100%;
+
 overflow: hidden;
 
-background: #05070c;
-
-touch-action: none;
+background: #111;
 
 font-family:
 Arial,
 Helvetica,
 sans-serif;
+
+touch-action: none;
+
+user-select: none;
+
 }
+
 
 body {
+
 display: flex;
+
 justify-content: center;
+
 align-items: center;
+
 }
 
 
-/* =========================================
-GAME CONTAINER
-========================================= */
+#game {
 
-#game-container {
 width: 100vw;
 height: 100vh;
 
 position: relative;
 
 overflow: hidden;
+
+background:
+linear-gradient(
+#62b6e8 0%,
+#bde7ff 38%,
+#39434c 39%,
+#171a1d 100%
+);
+
 }
 
 
-canvas {
-display: block;
+/* ======================================
+SKY
+====================================== */
 
-width: 100% !important;
-height: 100% !important;
+.sky {
 
-object-fit: cover;
+position: absolute;
+
+inset: 0 0 55% 0;
+
+background:
+
+linear-gradient(
+rgba(255,255,255,.25),
+rgba(255,255,255,0)
+);
+
 }
 
 
-/* =========================================
-REALISTIC GOLD COIN
-========================================= */
+/* ======================================
+CITY
+====================================== */
 
-.game-object.collectible {
+.city {
 
-width: 42px;
-height: 42px;
+position: absolute;
+
+top: 22%;
+
+left: 0;
+
+width: 100%;
+
+height: 25%;
+
+display: flex;
+
+align-items: flex-end;
+
+justify-content: space-around;
+
+opacity: .85;
+
+}
+
+
+.building {
+
+width: 12%;
+
+background:
+linear-gradient(
+90deg,
+#27313b,
+#53616c,
+#1d252c
+);
+
+border-top:
+4px solid
+#202830;
+
+}
+
+
+.b1 { height: 80%; }
+.b2 { height: 55%; }
+.b3 { height: 90%; }
+.b4 { height: 65%; }
+.b5 { height: 75%; }
+.b6 { height: 50%; }
+
+
+/* ======================================
+RAILWAY
+====================================== */
+
+.railway {
+
+position: absolute;
+
+left: 0;
+
+right: 0;
+
+bottom: -10%;
+
+height: 75%;
+
+background:
+linear-gradient(
+100deg,
+#252a2f,
+#555d63,
+#252a2f
+);
+
+transform:
+perspective(600px)
+rotateX(8deg);
+
+}
+
+
+/* Tracks */
+
+.track {
+
+position: absolute;
+
+bottom: 0;
+
+height: 100%;
+
+width: 28%;
+
+}
+
+
+.track-left {
+left: 5%;
+}
+
+
+.track-middle {
+left: 36%;
+}
+
+
+.track-right {
+right: 5%;
+}
+
+
+/* Rails */
+
+.rail {
+
+position: absolute;
+
+bottom: 0;
+
+width: 8px;
+
+height: 100%;
+
+background:
+linear-gradient(
+90deg,
+#59636c,
+#e5e7eb,
+#626b73
+);
+
+box-shadow:
+0 0 5px
+rgba(0,0,0,.8);
+
+}
+
+
+.rail-a {
+left: 25%;
+}
+
+
+.rail-b {
+right: 25%;
+}
+
+
+/* ======================================
+SLEEPERS
+====================================== */
+
+#sleepers {
+
+position: absolute;
+
+inset: 0;
+
+background:
+
+repeating-linear-gradient(
+to bottom,
+transparent 0px,
+transparent 55px,
+rgba(68,42,25,.9) 56px,
+rgba(68,42,25,.9) 72px
+);
+
+opacity: .9;
+
+}
+
+
+/* ======================================
+WORLD
+====================================== */
+
+#world {
+
+position: absolute;
+
+inset: 0;
+
+overflow: hidden;
+
+}
+
+
+/* ======================================
+PLAYER + CHASER
+====================================== */
+
+.character {
+
+position: absolute;
+
+width: 62px;
+
+height: 125px;
+
+bottom: 19%;
+
+z-index: 50;
+
+transform:
+translateX(-50%);
+
+}
+
+
+.player {
+
+left: 50%;
+
+}
+
+
+.chaser {
+
+left: 50%;
+
+bottom: 11%;
+
+transform:
+translateX(-50%)
+scale(.85);
+
+z-index: 40;
+
+opacity: .95;
+
+}
+
+
+/* ======================================
+HEAD
+====================================== */
+
+.head {
+
+position: absolute;
+
+top: 0;
+
+left: 50%;
+
+width: 35px;
+
+height: 35px;
+
+transform:
+translateX(-50%);
 
 border-radius: 50%;
 
 background:
 radial-gradient(
-circle at 30% 25%,
-#fff7a8 0%,
-#ffd700 18%,
-#f5b800 45%,
-#c88700 75%,
-#8a5a00 100%
+circle at 35% 30%,
+#ffe0bd,
+#c68652 70%,
+#75452d
 );
 
-border: 4px solid #ffe36e;
-
 box-shadow:
-0 0 8px
-rgba(255, 215, 0, 0.9),
+0 3px 5px
+rgba(0,0,0,.4);
 
-0 0 20px
-rgba(255, 190, 0, 0.6),
-
-inset 0 0 8px
-rgba(255, 255, 255, 0.6);
-
-position: relative;
-
-transform-style: preserve-3d;
-
-animation:
-coinSpin
-0.8s
-linear
-infinite;
-
-z-index: 20;
 }
 
 
-/* =========================================
-COIN INNER RING
-========================================= */
+/* ======================================
+BODY
+====================================== */
 
-.game-object.collectible::before {
-
-content: "";
+.body {
 
 position: absolute;
 
-top: 5px;
-left: 5px;
+top: 32px;
 
-right: 5px;
-bottom: 5px;
+left: 50%;
 
-border-radius: 50%;
+width: 40px;
 
-border:
-2px solid
-rgba(255, 247, 168, 0.8);
+height: 55px;
+
+transform:
+translateX(-50%);
+
+border-radius:
+10px 10px 5px 5px;
+
+background:
+linear-gradient(
+90deg,
+#111827,
+#374151,
+#111827
+);
 
 box-shadow:
-inset 0 0 5px
-rgba(130, 80, 0, 0.7);
+0 5px 10px
+rgba(0,0,0,.5);
 
 }
 
 
-/* =========================================
-COIN SYMBOL
-========================================= */
+/* Chaser outfit */
 
-.game-object.collectible::after {
+.chaser .body {
+
+background:
+linear-gradient(
+90deg,
+#7f1d1d,
+#dc2626,
+#7f1d1d
+);
+
+}
+
+
+/* ======================================
+ARMS
+====================================== */
+
+.arm {
+
+position: absolute;
+
+top: 38px;
+
+width: 12px;
+
+height: 55px;
+
+border-radius: 10px;
+
+background:
+linear-gradient(
+#d59a6a,
+#8d5737
+);
+
+transform-origin:
+top center;
+
+}
+
+
+.arm-left {
+
+left: 3px;
+
+transform:
+rotate(25deg);
+
+animation:
+armRunLeft
+.35s
+infinite
+alternate;
+
+}
+
+
+.arm-right {
+
+right: 3px;
+
+transform:
+rotate(-25deg);
+
+animation:
+armRunRight
+.35s
+infinite
+alternate;
+
+}
+
+
+@keyframes armRunLeft {
+
+to {
+
+transform:
+rotate(-35deg);
+
+}
+
+}
+
+
+@keyframes armRunRight {
+
+to {
+
+transform:
+rotate(35deg);
+
+}
+
+}
+
+
+/* ======================================
+LEGS
+====================================== */
+
+.leg {
+
+position: absolute;
+
+top: 80px;
+
+width: 14px;
+
+height: 55px;
+
+border-radius:
+10px;
+
+background:
+linear-gradient(
+90deg,
+#111827,
+#4b5563
+);
+
+transform-origin:
+top center;
+
+}
+
+
+.leg-left {
+
+left: 16px;
+
+animation:
+legRunLeft
+.3s
+infinite
+alternate;
+
+}
+
+
+.leg-right {
+
+right: 16px;
+
+animation:
+legRunRight
+.3s
+infinite
+alternate;
+
+}
+
+
+@keyframes legRunLeft {
+
+from {
+
+transform:
+rotate(35deg);
+
+}
+
+to {
+
+transform:
+rotate(-35deg);
+
+}
+
+}
+
+
+@keyframes legRunRight {
+
+from {
+
+transform:
+rotate(-35deg);
+
+}
+
+to {
+
+transform:
+rotate(35deg);
+
+}
+
+}
+
+
+/* ======================================
+SKATEBOARD
+====================================== */
+
+.skateboard {
+
+position: absolute;
+
+left: 50%;
+
+bottom: -10px;
+
+width: 85px;
+
+height: 10px;
+
+transform:
+translateX(-50%);
+
+border-radius:
+50%;
+
+background:
+linear-gradient(
+#ef4444,
+#991b1b
+);
+
+opacity: 0;
+
+transition:
+opacity .2s;
+
+}
+
+
+.skateboard span {
+
+position: absolute;
+
+bottom: -7px;
+
+width: 12px;
+
+height: 12px;
+
+border-radius: 50%;
+
+background: #111;
+
+}
+
+
+.skateboard span:first-child {
+left: 10px;
+}
+
+
+.skateboard span:last-child {
+right: 10px;
+}
+
+
+.player.skating .skateboard {
+
+opacity: 1;
+
+}
+
+
+/* ======================================
+COINS
+====================================== */
+
+.coin {
+
+position: absolute;
+
+width: 42px;
+
+height: 42px;
+
+border-radius: 50%;
+
+background:
+
+radial-gradient(
+circle at 30% 25%,
+#fff7a8,
+#ffd700 25%,
+#eab308 60%,
+#9a6500
+);
+
+border:
+4px solid
+#ffe16b;
+
+box-shadow:
+
+0 0 12px
+rgba(255,215,0,.9),
+
+inset 0 0 7px
+rgba(255,255,255,.8);
+
+animation:
+coinSpin
+.7s
+linear
+infinite;
+
+}
+
+
+.coin::after {
 
 content: "★";
 
@@ -145,174 +707,563 @@ top: 50%;
 left: 50%;
 
 transform:
-translate(-50%, -50%);
+translate(-50%,-50%);
 
-color: #fff4a3;
+color:
+#fff6a0;
 
 font-size: 20px;
 
-font-weight: bold;
-
-text-shadow:
-1px 1px 2px #8a5a00,
-
-0 0 4px
-#ffffff;
-
 }
 
-
-/* =========================================
-COIN SPIN ANIMATION
-========================================= */
 
 @keyframes coinSpin {
 
 0% {
 
 transform:
-rotateY(0deg)
-scaleX(1);
+translateX(-50%)
+rotateY(0deg);
 
 }
 
 50% {
 
 transform:
+translateX(-50%)
 rotateY(90deg)
-scaleX(0.15);
+scaleX(.15);
 
 }
 
 100% {
 
 transform:
-rotateY(180deg)
-scaleX(1);
+translateX(-50%)
+rotateY(180deg);
 
 }
 
 }
 
 
-/* =========================================
-COIN GLOW ANIMATION
-========================================= */
+/* ======================================
+BARRIERS
+====================================== */
 
-@keyframes coinGlow {
-
-0% {
-
-filter:
-brightness(1);
-
-}
-
-50% {
-
-filter:
-brightness(1.35);
-
-}
-
-100% {
-
-filter:
-brightness(1);
-
-}
-
-}
-
-
-/* =========================================
-GAME OBJECTS
-========================================= */
-
-.game-object {
+.barrier {
 
 position: absolute;
 
-user-select: none;
+width: 90px;
 
-pointer-events: none;
+height: 65px;
 
-}
+background:
+repeating-linear-gradient(
+135deg,
+#ef4444 0px,
+#ef4444 15px,
+#f8fafc 15px,
+#f8fafc 30px
+);
 
-
-/* =========================================
-OBSTACLE
-========================================= */
-
-.game-object.obstacle {
-
-border-radius: 8px;
-
-box-shadow:
-0 5px 12px
-rgba(0, 0, 0, 0.5);
-
-}
-
-
-/* =========================================
-TRAIN
-========================================= */
-
-.game-object.vehicle {
+border:
+5px solid
+#111827;
 
 border-radius:
-15px 15px 5px 5px;
+6px;
 
 box-shadow:
-0 8px 20px
-rgba(0, 0, 0, 0.6);
+0 8px 15px
+rgba(0,0,0,.6);
 
 }
 
 
-/* =========================================
-MOBILE OPTIMIZATION
-========================================= */
+/* ======================================
+TRAINS
+====================================== */
+
+.train {
+
+position: absolute;
+
+width: 125px;
+
+height: 320px;
+
+border-radius:
+18px 18px 5px 5px;
+
+background:
+
+linear-gradient(
+90deg,
+#0f3b66,
+#1683c7,
+#0b4778
+);
+
+border:
+5px solid
+#dbeafe;
+
+box-shadow:
+0 12px 25px
+rgba(0,0,0,.7);
+
+}
+
+
+.train::before {
+
+content: "";
+
+position: absolute;
+
+top: 25px;
+
+left: 15px;
+
+right: 15px;
+
+height: 80px;
+
+border-radius:
+8px;
+
+background:
+linear-gradient(
+#0f172a,
+#38bdf8
+);
+
+border:
+3px solid
+#e5e7eb;
+
+}
+
+
+.train::after {
+
+content: "";
+
+position: absolute;
+
+bottom: 25px;
+
+left: 15px;
+
+right: 15px;
+
+height: 15px;
+
+background:
+#facc15;
+
+}
+
+
+/* ======================================
+SCOREBOARD
+====================================== */
+
+.scoreboard {
+
+position: absolute;
+
+top: 20px;
+
+left: 50%;
+
+transform:
+translateX(-50%);
+
+display: flex;
+
+gap: 8px;
+
+z-index: 100;
+
+}
+
+
+.stat {
+
+min-width: 90px;
+
+padding:
+8px 12px;
+
+text-align: center;
+
+color: white;
+
+background:
+rgba(0,0,0,.65);
+
+border:
+1px solid
+rgba(255,255,255,.25);
+
+border-radius:
+10px;
+
+backdrop-filter:
+blur(8px);
+
+}
+
+
+.stat small {
+
+display: block;
+
+font-size:
+9px;
+
+color:
+#cbd5e1;
+
+}
+
+
+.stat strong {
+
+display: block;
+
+font-size:
+18px;
+
+}
+
+
+/* ======================================
+POWER UP
+====================================== */
+
+.power-up {
+
+position: absolute;
+
+right: 20px;
+
+top: 25px;
+
+padding:
+10px 15px;
+
+color:
+white;
+
+background:
+rgba(0,0,0,.65);
+
+border-radius:
+10px;
+
+z-index: 100;
+
+}
+
+
+.power-up span {
+
+font-size:
+10px;
+
+display: block;
+
+}
+
+
+/* ======================================
+SCREENS
+====================================== */
+
+.screen {
+
+position: absolute;
+
+inset: 0;
+
+display: flex;
+
+flex-direction: column;
+
+align-items: center;
+
+justify-content: center;
+
+z-index: 500;
+
+color: white;
+
+background:
+linear-gradient(
+rgba(0,0,0,.45),
+rgba(0,0,0,.75)
+);
+
+}
+
+
+.hidden {
+
+display: none !important;
+
+}
+
+
+/* ======================================
+LOGO
+====================================== */
+
+.logo {
+
+font-size:
+clamp(
+45px,
+10vw,
+85px
+);
+
+font-weight:
+900;
+
+letter-spacing:
+-3px;
+
+text-shadow:
+0 5px 15px
+rgba(0,0,0,.8);
+
+}
+
+
+.logo span {
+
+color:
+#facc15;
+
+}
+
+
+/* ======================================
+LOADING
+====================================== */
+
+.loading-bar {
+
+width:
+min(320px,70vw);
+
+height:
+8px;
+
+margin-top:
+30px;
+
+background:
+#334155;
+
+border-radius:
+10px;
+
+overflow:
+hidden;
+
+}
+
+
+#loadingProgress {
+
+width:
+0%;
+
+height:
+100%;
+
+background:
+#facc15;
+
+transition:
+width .2s;
+
+}
+
+
+/* ======================================
+START
+====================================== */
+
+.subtitle {
+
+margin-top:
+15px;
+
+letter-spacing:
+4px;
+
+}
+
+
+.tap {
+
+margin-top:
+50px;
+
+font-size:
+22px;
+
+color:
+#facc15;
+
+animation:
+pulse
+1.2s
+infinite;
+
+}
+
+
+.controls {
+
+display:
+flex;
+
+gap:
+15px;
+
+margin-top:
+30px;
+
+font-size:
+11px;
+
+color:
+#cbd5e1;
+
+}
+
+
+@keyframes pulse {
+
+50% {
+
+transform:
+scale(1.08);
+
+opacity:
+.65;
+
+}
+
+}
+
+
+/* ======================================
+GAME OVER
+====================================== */
+
+#gameOverScreen h1 {
+
+font-size:
+70px;
+
+color:
+#ef4444;
+
+}
+
+
+.final-score {
+
+margin-top:
+30px;
+
+text-align:
+center;
+
+}
+
+
+.final-score span {
+
+display:
+block;
+
+color:
+#cbd5e1;
+
+}
+
+
+.final-score strong {
+
+font-size:
+60px;
+
+}
+
+
+/* ======================================
+MOBILE
+====================================== */
 
 @media (
 max-width: 600px
 ) {
 
-canvas {
+.scoreboard {
 
-width: 100vw !important;
-
-height: 100vh !important;
-
-}
+top:
+10px;
 
 }
 
 
-/* =========================================
-PREVENT TEXT SELECTION
-========================================= */
+.stat {
 
-body,
-canvas {
+min-width:
+75px;
 
--webkit-user-select: none;
-
-user-select: none;
-
--webkit-touch-callout: none;
+padding:
+6px;
 
 }
 
 
-/* =========================================
-REMOVE TAP HIGHLIGHT
-========================================= */
+.stat strong {
 
-* {
+font-size:
+15px;
 
--webkit-tap-highlight-color:
-transparent;
+}
+
+
+.power-up {
+
+top:
+85px;
+
+right:
+10px;
+
+}
+
+
+.controls {
+
+flex-direction:
+column;
+
+align-items:
+center;
+
+}
 
 }

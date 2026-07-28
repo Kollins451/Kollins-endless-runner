@@ -1,24 +1,21 @@
-// ==========================
-// ELEMENTS
-// ==========================
+/* =========================
+ELEMENTS
+========================= */
+
+const game =
+document.getElementById("game");
 
 const player =
 document.getElementById("player");
 
-const obstacle =
-document.getElementById("obstacle");
-
-const train =
-document.getElementById("train");
-
-const coins =
-document.querySelectorAll(".coin");
+const objects =
+document.getElementById("objects");
 
 const scoreDisplay =
 document.getElementById("score");
 
-const topScoreDisplay =
-document.getElementById("topScore");
+const coinCountDisplay =
+document.getElementById("coinCount");
 
 const startScreen =
 document.getElementById("startScreen");
@@ -29,99 +26,267 @@ document.getElementById("startButton");
 const gameOverScreen =
 document.getElementById("gameOverScreen");
 
+const restartButton =
+document.getElementById("restartButton");
+
 const finalScore =
 document.getElementById("finalScore");
+
+const finalCoins =
+document.getElementById("finalCoins");
 
 const bestScore =
 document.getElementById("bestScore");
 
-const restartButton =
-document.getElementById("restartButton");
+const topScore =
+document.getElementById("score");
+
+const soundButton =
+document.getElementById("soundButton");
+
+const leftButton =
+document.getElementById("leftButton");
+
+const rightButton =
+document.getElementById("rightButton");
+
+const jumpButton =
+document.getElementById("jumpButton");
 
 
-// ==========================
-// GAME VARIABLES
-// ==========================
+/* =========================
+GAME VARIABLES
+========================= */
 
 let lane = 1;
 
 let score = 0;
 
-let gameSpeed = 5;
+let coinCount = 0;
 
-let obstaclePosition = -60;
+let speed = 5;
 
-let trainPosition = -250;
+let gameRunning = false;
 
-let coinPosition = -60;
+let gameOver = false;
 
 let isJumping = false;
 
-let gameStarted = false;
+let lastTime = 0;
 
-let gameOverState = false;
+let spawnTimer = 0;
 
-
-// ==========================
-// TOUCH VARIABLES
-// ==========================
-
-let touchStartX = 0;
-
-let touchStartY = 0;
+let coinTimer = 0;
 
 
-// ==========================
-// LANES
-// ==========================
+/* =========================
+LANES
+========================= */
 
-const lanes = [
+const lanePositions = [
 "16.66%",
 "50%",
 "83.33%"
 ];
 
 
-// ==========================
-// HIGH SCORE
-// ==========================
+/* =========================
+HIGH SCORE
+========================= */
 
 let highScore =
 Number(
 localStorage.getItem(
-"endlessRunnerHighScore"
+"railRushHighScore"
 )
 ) || 0;
 
 
-topScoreDisplay.textContent =
-highScore;
+/* =========================
+SOUND SYSTEM
+Uses Web Audio API
+========================= */
+
+let audioContext = null;
+
+let soundEnabled = true;
 
 
-// ==========================
-// START GAME
-// ==========================
+function initAudio() {
 
-startButton.addEventListener(
+if (!audioContext) {
+
+audioContext =
+new (
+window.AudioContext ||
+window.webkitAudioContext
+)();
+
+}
+
+}
+
+
+function playSound(
+frequency,
+duration,
+type = "sine"
+) {
+
+if (
+!soundEnabled ||
+!audioContext
+) {
+
+return;
+
+}
+
+
+const oscillator =
+audioContext.createOscillator();
+
+const gain =
+audioContext.createGain();
+
+
+oscillator.type =
+type;
+
+oscillator.frequency.value =
+frequency;
+
+
+gain.gain.setValueAtTime(
+0.15,
+audioContext.currentTime
+);
+
+
+gain.gain.exponentialRampToValueAtTime(
+0.001,
+audioContext.currentTime +
+duration
+);
+
+
+oscillator.connect(gain);
+
+gain.connect(
+audioContext.destination
+);
+
+
+oscillator.start();
+
+oscillator.stop(
+audioContext.currentTime +
+duration
+);
+
+}
+
+
+/* COIN SOUND */
+
+function coinSound() {
+
+playSound(
+900,
+.08,
+"square"
+);
+
+setTimeout(
+() => playSound(
+1200,
+.08,
+"square"
+),
+80
+);
+
+}
+
+
+/* JUMP SOUND */
+
+function jumpSound() {
+
+playSound(
+500,
+.2,
+"sine"
+);
+
+}
+
+
+/* GAME OVER SOUND */
+
+function crashSound() {
+
+playSound(
+100,
+.5,
+"sawtooth"
+);
+
+}
+
+
+/* =========================
+SOUND BUTTON
+========================= */
+
+soundButton.addEventListener(
 "click",
 function() {
 
-startScreen.style.display =
-"none";
+soundEnabled =
+!soundEnabled;
 
-gameStarted = true;
-
-setCoinsLane();
-
-moveGame();
+soundButton.textContent =
+soundEnabled
+? "🔊"
+: "🔇";
 
 }
 );
 
 
-// ==========================
-// RESTART GAME
-// ==========================
+/* =========================
+START GAME
+========================= */
+
+startButton.addEventListener(
+"click",
+function() {
+
+initAudio();
+
+startScreen.classList.add(
+"hidden"
+);
+
+gameRunning = true;
+
+gameOver = false;
+
+lastTime =
+performance.now();
+
+requestAnimationFrame(
+gameLoop
+);
+
+}
+);
+
+
+/* =========================
+RESTART
+========================= */
 
 restartButton.addEventListener(
 "click",
@@ -133,44 +298,15 @@ location.reload();
 );
 
 
-// ==========================
-// SET COINS LANE
-// ==========================
+/* =========================
+MOVE LEFT
+========================= */
 
-function setCoinsLane() {
-
-const randomLane =
-Math.floor(
-Math.random() * 3
-);
-
-
-coins.forEach(
-function(coin) {
-
-coin.style.left =
-lanes[randomLane];
-
-coin.style.visibility =
-"visible";
-
-}
-);
-
-}
-
-
-// ==========================
-// KEYBOARD CONTROLS
-// ==========================
-
-document.addEventListener(
-"keydown",
-function(event) {
+function moveLeft() {
 
 if (
-!gameStarted ||
-gameOverState
+!gameRunning ||
+gameOver
 ) {
 
 return;
@@ -178,7 +314,105 @@ return;
 }
 
 
-// LEFT
+if (lane > 0) {
+
+lane--;
+
+player.style.left =
+lanePositions[lane];
+
+playSound(
+250,
+.08
+);
+
+}
+
+}
+
+
+/* =========================
+MOVE RIGHT
+========================= */
+
+function moveRight() {
+
+if (
+!gameRunning ||
+gameOver
+) {
+
+return;
+
+}
+
+
+if (lane < 2) {
+
+lane++;
+
+player.style.left =
+lanePositions[lane];
+
+playSound(
+250,
+.08
+);
+
+}
+
+}
+
+
+/* =========================
+JUMP
+========================= */
+
+function jump() {
+
+if (
+!gameRunning ||
+gameOver ||
+isJumping
+) {
+
+return;
+
+}
+
+
+isJumping = true;
+
+player.classList.add(
+"jumping"
+);
+
+jumpSound();
+
+
+setTimeout(
+function() {
+
+player.classList.remove(
+"jumping"
+);
+
+isJumping = false;
+
+},
+550
+);
+
+}
+
+
+/* =========================
+KEYBOARD
+========================= */
+
+document.addEventListener(
+"keydown",
+function(event) {
 
 if (
 event.key ===
@@ -189,9 +423,6 @@ moveLeft();
 
 }
 
-
-// RIGHT
-
 if (
 event.key ===
 "ArrowRight"
@@ -201,13 +432,14 @@ moveRight();
 
 }
 
-
-// JUMP
-
 if (
 event.key ===
-"ArrowUp"
+"ArrowUp" ||
+event.key ===
+" "
 ) {
+
+event.preventDefault();
 
 jump();
 
@@ -217,67 +449,44 @@ jump();
 );
 
 
-// ==========================
-// MOVE LEFT
-// ==========================
+/* =========================
+MOBILE BUTTONS
+========================= */
 
-function moveLeft() {
+leftButton.addEventListener(
+"click",
+moveLeft
+);
 
-if (lane > 0) {
+rightButton.addEventListener(
+"click",
+moveRight
+);
 
-lane--;
-
-player.style.left =
-lanes[lane];
-
-}
-
-}
-
-
-// ==========================
-// MOVE RIGHT
-// ==========================
-
-function moveRight() {
-
-if (lane < 2) {
-
-lane++;
-
-player.style.left =
-lanes[lane];
-
-}
-
-}
+jumpButton.addEventListener(
+"click",
+jump
+);
 
 
-// ==========================
-// MOBILE TOUCH START
-// ==========================
+/* =========================
+SWIPE CONTROLS
+========================= */
 
-document.addEventListener(
+let touchStartX = 0;
+
+let touchStartY = 0;
+
+
+game.addEventListener(
 "touchstart",
 function(event) {
-
-if (
-!gameStarted ||
-gameOverState
-) {
-
-return;
-
-}
-
 
 const touch =
 event.touches[0];
 
-
 touchStartX =
 touch.clientX;
-
 
 touchStartY =
 touch.clientY;
@@ -289,93 +498,48 @@ passive: true
 );
 
 
-// ==========================
-// MOBILE SWIPE
-// ==========================
-
-document.addEventListener(
+game.addEventListener(
 "touchend",
 function(event) {
-
-if (
-!gameStarted ||
-gameOverState
-) {
-
-return;
-
-}
-
 
 const touch =
 event.changedTouches[0];
 
-
-const touchEndX =
-touch.clientX;
-
-
-const touchEndY =
-touch.clientY;
-
-
-const differenceX =
-touchEndX -
+const dx =
+touch.clientX -
 touchStartX;
 
-
-const differenceY =
-touchEndY -
+const dy =
+touch.clientY -
 touchStartY;
 
 
-// SWIPE LEFT
-
 if (
-Math.abs(
-differenceX
-) >
-Math.abs(
-differenceY
-) &&
-differenceX < -50
+Math.abs(dx) >
+Math.abs(dy)
 ) {
 
-moveLeft();
-
-}
-
-
-// SWIPE RIGHT
-
-if (
-Math.abs(
-differenceX
-) >
-Math.abs(
-differenceY
-) &&
-differenceX > 50
-) {
+if (dx > 50) {
 
 moveRight();
 
 }
 
+else if (dx < -50) {
 
-// SWIPE UP
+moveLeft();
 
-if (
-Math.abs(
-differenceY
-) >
-Math.abs(
-differenceX
-) &&
-differenceY < -50
-) {
+}
+
+}
+
+else {
+
+if (dy < -50) {
 
 jump();
+
+}
 
 }
 
@@ -386,80 +550,24 @@ passive: true
 );
 
 
-// ==========================
-// JUMP
-// ==========================
+/* =========================
+CREATE COIN
+========================= */
 
-function jump() {
+function createCoin() {
 
-if (
-isJumping ||
-!gameStarted ||
-gameOverState
-) {
-
-return;
-
-}
-
-
-isJumping = true;
-
-
-player.style.bottom =
-"200px";
-
-
-setTimeout(
-function() {
-
-player.style.bottom =
-"80px";
-
-isJumping = false;
-
-},
-500
+const coin =
+document.createElement(
+"div"
 );
 
-}
+
+coin.className =
+"game-object coin";
 
 
-// ==========================
-// MAIN GAME LOOP
-// ==========================
-
-function moveGame() {
-
-if (
-!gameStarted ||
-gameOverState
-) {
-
-return;
-
-}
-
-
-// ==========================
-// OBSTACLE
-// ==========================
-
-obstaclePosition +=
-gameSpeed;
-
-
-obstacle.style.top =
-obstaclePosition + "px";
-
-
-if (
-obstaclePosition >
-700
-) {
-
-obstaclePosition =
--60;
+coin.textContent =
+"★";
 
 
 const randomLane =
@@ -468,249 +576,247 @@ Math.random() * 3
 );
 
 
-obstacle.style.left =
-lanes[randomLane];
+coin.style.left =
+lanePositions[
+randomLane
+];
+
+
+coin.style.top =
+"-60px";
+
+
+objects.appendChild(
+coin
+);
+
+
+return coin;
 
 }
 
 
-// ==========================
-// TRAIN
-// ==========================
+/* =========================
+CREATE BARRIER
+========================= */
 
-trainPosition +=
-gameSpeed;
+function createBarrier() {
+
+const barrier =
+document.createElement(
+"div"
+);
 
 
-train.style.top =
-trainPosition + "px";
+barrier.className =
+"game-object barrier";
 
 
-if (
-trainPosition >
-700
-) {
-
-trainPosition =
--250;
+barrier.textContent =
+"🚧";
 
 
 const randomLane =
 Math.floor(
 Math.random() * 3
 );
+
+
+barrier.dataset.lane =
+randomLane;
+
+
+barrier.style.left =
+lanePositions[
+randomLane
+];
+
+
+barrier.style.top =
+"-80px";
+
+
+objects.appendChild(
+barrier
+);
+
+}
+
+
+/* =========================
+CREATE TRAIN
+========================= */
+
+function createTrain() {
+
+const train =
+document.createElement(
+"div"
+);
+
+
+train.className =
+"game-object train";
+
+
+const randomLane =
+Math.floor(
+Math.random() * 3
+);
+
+
+train.dataset.lane =
+randomLane;
 
 
 train.style.left =
-lanes[randomLane];
-
-}
-
-
-// ==========================
-// COINS
-// ==========================
-
-coinPosition +=
-gameSpeed;
+lanePositions[
+randomLane
+];
 
 
-coins.forEach(
-function(
-coin,
-index
-) {
-
-coin.style.top =
-(
-coinPosition +
-index * 70
-) + "px";
-
-}
-);
+train.style.top =
+"-220px";
 
 
-if (
-coinPosition >
-700
-) {
-
-coinPosition =
--60;
-
-
-setCoinsLane();
-
-}
-
-
-// ==========================
-// COLLISIONS
-// ==========================
-
-checkObstacleCollision();
-
-checkTrainCollision();
-
-collectCoins();
-
-
-// ==========================
-// INCREASE SPEED
-// ==========================
-
-if (
-score > 0 &&
-score % 50 === 0
-) {
-
-gameSpeed =
-5 +
-Math.floor(
-score / 50
+objects.appendChild(
+train
 );
 
 }
 
 
-requestAnimationFrame(
-moveGame
+/* =========================
+COLLISION
+========================= */
+
+function isColliding(
+playerRect,
+objectRect
+) {
+
+return (
+
+playerRect.left <
+objectRect.right &&
+
+playerRect.right >
+objectRect.left &&
+
+playerRect.top <
+objectRect.bottom &&
+
+playerRect.bottom >
+objectRect.top
+
 );
 
 }
 
 
-// ==========================
-// OBSTACLE COLLISION
-// ==========================
+/* =========================
+UPDATE OBJECTS
+========================= */
 
-function checkObstacleCollision() {
+function updateObjects(
+deltaTime
+) {
+
+const allObjects =
+document.querySelectorAll(
+".game-object"
+);
+
 
 const playerRect =
 player.getBoundingClientRect();
 
 
-const obstacleRect =
-obstacle.getBoundingClientRect();
+allObjects.forEach(
+function(object) {
+
+let currentTop =
+parseFloat(
+object.style.top
+);
 
 
-if (
-
-playerRect.left <
-obstacleRect.right &&
-
-playerRect.right >
-obstacleRect.left &&
-
-playerRect.top <
-obstacleRect.bottom &&
-
-playerRect.bottom >
-obstacleRect.top &&
-
-!isJumping
-
-) {
-
-gameOver();
-
-}
-
-}
+currentTop +=
+speed *
+deltaTime *
+0.08;
 
 
-// ==========================
-// TRAIN COLLISION
-// ==========================
-
-function checkTrainCollision() {
-
-const playerRect =
-player.getBoundingClientRect();
+object.style.top =
+currentTop + "px";
 
 
-const trainRect =
-train.getBoundingClientRect();
+const objectRect =
+object.getBoundingClientRect();
 
+
+/* COIN */
 
 if (
-
-playerRect.left <
-trainRect.right &&
-
-playerRect.right >
-trainRect.left &&
-
-playerRect.top <
-trainRect.bottom &&
-
-playerRect.bottom >
-trainRect.top &&
-
-!isJumping
-
+object.classList.contains(
+"coin"
+)
 ) {
-
-gameOver();
-
-}
-
-}
-
-
-// ==========================
-// COLLECT COINS
-// ==========================
-
-function collectCoins() {
-
-const playerRect =
-player.getBoundingClientRect();
-
-
-coins.forEach(
-function(coin) {
 
 if (
-coin.style.visibility ===
-"hidden"
+isColliding(
+playerRect,
+objectRect
+)
 ) {
 
-return;
-
-}
-
-
-const coinRect =
-coin.getBoundingClientRect();
-
-
-if (
-
-playerRect.left <
-coinRect.right &&
-
-playerRect.right >
-coinRect.left &&
-
-playerRect.top <
-coinRect.bottom &&
-
-playerRect.bottom >
-coinRect.top
-
-) {
+coinCount++;
 
 score += 10;
 
+coinCountDisplay.textContent =
+coinCount;
 
 scoreDisplay.textContent =
 score;
 
+coinSound();
 
-coin.style.visibility =
-"hidden";
+object.remove();
+
+}
+
+}
+
+
+/* OBSTACLE */
+
+else {
+
+if (
+isColliding(
+playerRect,
+objectRect
+) &&
+!isJumping
+) {
+
+endGame();
+
+}
+
+}
+
+
+/* REMOVE OBJECT */
+
+if (
+currentTop >
+window.innerHeight +
+300
+) {
+
+object.remove();
 
 }
 
@@ -720,57 +826,180 @@ coin.style.visibility =
 }
 
 
-// ==========================
-// GAME OVER
-// ==========================
+/* =========================
+GAME LOOP
+========================= */
 
-function gameOver() {
+function gameLoop(
+currentTime
+) {
 
-if (gameOverState) {
+if (
+!gameRunning ||
+gameOver
+) {
 
 return;
 
 }
 
 
-gameOverState =
-true;
+const deltaTime =
+currentTime -
+lastTime;
 
 
-// Save high score
+lastTime =
+currentTime;
+
+
+spawnTimer +=
+deltaTime;
+
+
+coinTimer +=
+deltaTime;
+
+
+/* SPAWN OBSTACLES */
 
 if (
-score >
+spawnTimer >
+Math.max(
+650,
+1300 -
+score * 2
+)
+) {
+
+spawnTimer = 0;
+
+
+if (
+Math.random() <
+0.55
+) {
+
+createBarrier();
+
+}
+
+else {
+
+createTrain();
+
+}
+
+}
+
+
+/* SPAWN COINS */
+
+if (
+coinTimer >
+500
+) {
+
+coinTimer = 0;
+
+createCoin();
+
+}
+
+
+updateObjects(
+deltaTime
+);
+
+
+/* SCORE */
+
+score +=
+deltaTime *
+0.01;
+
+
+scoreDisplay.textContent =
+Math.floor(score);
+
+
+/* SPEED */
+
+speed =
+5 +
+Math.floor(
+score / 100
+);
+
+
+requestAnimationFrame(
+gameLoop
+);
+
+}
+
+
+/* =========================
+END GAME
+========================= */
+
+function endGame() {
+
+if (gameOver) {
+
+return;
+
+}
+
+
+gameOver = true;
+
+gameRunning = false;
+
+
+crashSound();
+
+
+const final =
+Math.floor(
+score
+);
+
+
+if (
+final >
 highScore
 ) {
 
 highScore =
-score;
+final;
 
 
 localStorage.setItem(
-"endlessRunnerHighScore",
+"railRushHighScore",
 highScore
 );
 
 }
 
 
-// Show scores
-
 finalScore.textContent =
-score;
+final;
+
+
+finalCoins.textContent =
+coinCount;
 
 
 bestScore.textContent =
 highScore;
 
 
-topScoreDisplay.textContent =
-highScore;
+gameOverScreen.classList.remove(
+"hidden"
+);
 
-
-// Show game over screen
+}
 
 gameOverScreen.style.display =
 "flex";
